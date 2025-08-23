@@ -5,6 +5,7 @@ import java.io.File;
 public interface TranscriptionProvider {
     
     enum ProviderType {
+        ANDROID_SPEECH("Android Speech Recognition (Default)", false),
         OPENAI_WHISPER("OpenAI Whisper", true),
         LOCAL_WHISPER("Local Whisper (Offline)", false),
         GOOGLE_SPEECH("Google Speech-to-Text", true),
@@ -26,6 +27,9 @@ public interface TranscriptionProvider {
         void onSuccess(String transcript, String segments);
         void onProgress(int progressPercent);
         void onError(String error);
+        default void onPartialResult(String partialTranscript) {
+            // Optional callback for live transcription
+        }
     }
     
     /**

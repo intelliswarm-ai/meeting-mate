@@ -21,6 +21,8 @@ public class TranscriptionManager {
     }
     
     private void initializeProviders() {
+        providers.put(TranscriptionProvider.ProviderType.ANDROID_SPEECH, 
+                     new AndroidSpeechProvider(context));
         providers.put(TranscriptionProvider.ProviderType.OPENAI_WHISPER, 
                      new OpenAIWhisperProvider(context));
         providers.put(TranscriptionProvider.ProviderType.LOCAL_WHISPER, 

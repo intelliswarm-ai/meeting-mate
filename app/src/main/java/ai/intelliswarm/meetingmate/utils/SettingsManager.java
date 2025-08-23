@@ -129,11 +129,11 @@ public class SettingsManager {
     
     public ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType getSelectedTranscriptionProvider() {
         String providerName = sharedPreferences.getString(KEY_TRANSCRIPTION_PROVIDER, 
-            ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType.OPENAI_WHISPER.name());
+            ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType.ANDROID_SPEECH.name());
         try {
             return ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType.valueOf(providerName);
         } catch (IllegalArgumentException e) {
-            return ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType.OPENAI_WHISPER;
+            return ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType.ANDROID_SPEECH;
         }
     }
     

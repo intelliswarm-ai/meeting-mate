@@ -50,6 +50,8 @@ import ai.intelliswarm.meetingmate.service.CalendarService;
 import ai.intelliswarm.meetingmate.service.OpenAIService;
 import ai.intelliswarm.meetingmate.utils.SettingsManager;
 import ai.intelliswarm.meetingmate.transcription.TranscriptionManager;
+import ai.intelliswarm.meetingmate.transcription.TranscriptionProvider;
+import ai.intelliswarm.meetingmate.transcription.AndroidSpeechProvider;
 
 public class HomeFragment extends Fragment {
     
@@ -73,6 +75,9 @@ public class HomeFragment extends Fragment {
     private List<CalendarService.CalendarSource> calendarSources = new ArrayList<>();
     private String selectedCalendarSource = "test";
     private ObjectAnimator gradientAnimator;
+    
+    private AndroidSpeechProvider androidSpeechProvider;
+    private String liveTranscript = "";
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -92,10 +97,12 @@ public class HomeFragment extends Fragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             boolean isRecording = intent.getBooleanExtra("isRecording", false);
+            Log.d(TAG, "Recording state changed: isRecording = " + isRecording);
             
             if (!isRecording) {
                 String filePath = intent.getStringExtra("filePath");
                 long duration = intent.getLongExtra("duration", 0);
+                Log.d(TAG, "Recording stopped - filePath: " + filePath + ", duration: " + duration);
                 processRecording(filePath, duration);
             }
             
@@ -114,6 +121,12 @@ public class HomeFragment extends Fragment {
         fileManager = new MeetingFileManager(requireContext());
         calendarService = new CalendarService(requireContext());
         settingsManager = SettingsManager.getInstance(requireContext());
+        transcriptionManager = new TranscriptionManager(requireContext());
+        
+        // Get Android Speech Provider for live transcription
+        androidSpeechProvider = (AndroidSpeechProvider) transcriptionManager.getProvider(
+            TranscriptionProvider.ProviderType.ANDROID_SPEECH
+        );
         
         if (settingsManager.hasOpenAIApiKey()) {
             Log.d(TAG, "Initializing OpenAI service with saved API key");
@@ -265,11 +278,29 @@ public class HomeFragment extends Fragment {
     }
 
     private void startRecording() {
-        if (!settingsManager.hasOpenAIApiKey()) {
+        // Check if transcription provider is configured
+        TranscriptionProvider.ProviderType selectedProvider = settingsManager.getSelectedTranscriptionProvider();
+        TranscriptionProvider provider = transcriptionManager.getProvider(selectedProvider);
+        
+        if (provider != null && !provider.isConfigured()) {
             Toast.makeText(getContext(), 
-                "Please set your OpenAI API key in settings first", 
+                "Please configure " + selectedProvider.getDisplayName() + " in settings first", 
                 Toast.LENGTH_LONG).show();
             return;
+        }
+        
+        // Inform user about transcription approach
+        if (selectedProvider == TranscriptionProvider.ProviderType.ANDROID_SPEECH) {
+            if (androidSpeechProvider != null && androidSpeechProvider.isAvailable()) {
+                Toast.makeText(getContext(), "Starting live transcription...", Toast.LENGTH_SHORT).show();
+            } else {
+                // Inform about fallback
+                if (settingsManager.hasOpenAIApiKey()) {
+                    Toast.makeText(getContext(), "Android Speech not available. Will use OpenAI for transcription.", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "For transcription, please configure OpenAI Whisper in Settings.", Toast.LENGTH_LONG).show();
+                }
+            }
         }
 
         Intent serviceIntent = new Intent(getContext(), AudioRecordingService.class);
@@ -287,6 +318,13 @@ public class HomeFragment extends Fragment {
         
         isRecording = true;
         recordingStartTime = System.currentTimeMillis();
+        liveTranscript = "";
+        
+        // Start live transcription if using Android Speech
+        if (selectedProvider == TranscriptionProvider.ProviderType.ANDROID_SPEECH && androidSpeechProvider != null) {
+            startLiveTranscription();
+        }
+        
         updateRecordingUI(true);
         timerHandler.post(timerRunnable);
     }
@@ -294,6 +332,11 @@ public class HomeFragment extends Fragment {
     private void stopRecording() {
         if (recordingService != null) {
             recordingService.stopRecording();
+        }
+        
+        // Stop live transcription if running
+        if (androidSpeechProvider != null && androidSpeechProvider.isListening()) {
+            androidSpeechProvider.stopLiveTranscription();
         }
         
         isRecording = false;
@@ -323,20 +366,28 @@ public class HomeFragment extends Fragment {
     }
 
     private void processRecording(String audioFilePath, long duration) {
+        Log.d(TAG, "Processing recording - audioFilePath: " + audioFilePath + ", duration: " + duration);
+        
         if (audioFilePath == null || !new File(audioFilePath).exists()) {
-            Toast.makeText(getContext(), "Recording failed", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Recording file not found or null: " + audioFilePath);
+            Toast.makeText(getContext(), "Recording failed - file not found", Toast.LENGTH_SHORT).show();
             return;
         }
 
         String meetingId = fileManager.generateMeetingId();
         String meetingTitle = binding.editMeetingTitle.getText().toString();
         if (meetingTitle.isEmpty()) {
-            meetingTitle = "Meeting " + new Date().toString();
+            meetingTitle = "Meeting " + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault()).format(new Date());
         }
+        
+        Log.d(TAG, "Generated meeting - ID: " + meetingId + ", Title: " + meetingTitle);
 
         // Save audio file
         File audioFile = new File(audioFilePath);
+        Log.d(TAG, "Original audio file size: " + audioFile.length() + " bytes");
+        
         File savedAudioFile = fileManager.saveAudioFile(meetingId, audioFile);
+        Log.d(TAG, "Saved audio file: " + (savedAudioFile != null ? savedAudioFile.getAbsolutePath() : "null"));
 
         // Get selected calendar event if any
         CalendarService.EventInfo selectedEvent = null;
@@ -345,9 +396,14 @@ public class HomeFragment extends Fragment {
             selectedEvent = (CalendarService.EventInfo) binding.spinnerCalendarEvents.getSelectedItem();
         }
 
-        // Process with OpenAI
-        if (openAIService != null && savedAudioFile != null) {
-            processWithOpenAI(meetingId, meetingTitle, savedAudioFile, selectedEvent);
+        // Process with selected transcription provider
+        if (savedAudioFile != null) {
+            Log.d(TAG, "Current live transcript length: " + liveTranscript.length());
+            Log.d(TAG, "Live transcript content: " + (liveTranscript.isEmpty() ? "EMPTY" : liveTranscript.substring(0, Math.min(100, liveTranscript.length()))));
+            processWithTranscription(meetingId, meetingTitle, savedAudioFile, selectedEvent);
+        } else {
+            Log.e(TAG, "Failed to save audio file - cannot process transcription");
+            Toast.makeText(getContext(), "Failed to save recording", Toast.LENGTH_SHORT).show();
         }
 
         // Clear form
@@ -356,6 +412,190 @@ public class HomeFragment extends Fragment {
         
         Toast.makeText(getContext(), "Recording saved. Processing transcription...", 
             Toast.LENGTH_LONG).show();
+    }
+
+    private void processWithTranscription(String meetingId, String meetingTitle, 
+                                        File audioFile, CalendarService.EventInfo calendarEvent) {
+        Log.d(TAG, "Starting transcription processing for meeting: " + meetingTitle);
+        
+        TranscriptionProvider.ProviderType selectedProvider = settingsManager.getSelectedTranscriptionProvider();
+        
+        // For Android Speech, use the live transcript if available, otherwise fallback to OpenAI
+        if (selectedProvider == TranscriptionProvider.ProviderType.ANDROID_SPEECH) {
+            if (!liveTranscript.isEmpty()) {
+                Log.d(TAG, "Using live transcript from Android Speech Recognition");
+                processTranscriptionResult(meetingId, meetingTitle, liveTranscript, calendarEvent);
+                return;
+            } else {
+                Log.w(TAG, "No live transcript available from Android Speech, checking for OpenAI fallback");
+                
+                // Check if OpenAI is available as fallback for file transcription
+                if (settingsManager.hasOpenAIApiKey() && openAIService != null) {
+                    Log.d(TAG, "Using OpenAI as fallback for file transcription");
+                    processWithOpenAIFallback(meetingId, meetingTitle, audioFile, calendarEvent);
+                    return;
+                } else {
+                    Log.w(TAG, "No transcription available - saving meeting without transcript");
+                    
+                    // Save the meeting even without transcription
+                    Date meetingDate = new Date();
+                    String noTranscriptMessage = "No transcript available. Android Speech Recognition requires live audio. Configure OpenAI Whisper in Settings for file transcription.";
+                    
+                    // Save meeting with placeholder transcript
+                    fileManager.saveTranscript(meetingId, meetingTitle, noTranscriptMessage, meetingDate);
+                    fileManager.saveMeetingMetadata(
+                        meetingId, 
+                        meetingTitle, 
+                        meetingDate,
+                        audioFile.getAbsolutePath(),
+                        calendarEvent != null ? String.valueOf(calendarEvent.id) : null
+                    );
+                    
+                    requireActivity().runOnUiThread(() -> {
+                        Toast.makeText(getContext(), 
+                            "Recording saved. Configure OpenAI Whisper in Settings for transcription.", 
+                            Toast.LENGTH_LONG).show();
+                        binding.textRecordingStatus.setText("Ready to record");
+                        
+                        // Show dialog with the saved meeting
+                        showTranscriptDialog(meetingTitle, noTranscriptMessage, null);
+                    });
+                    return;
+                }
+            }
+        }
+        
+        // Use TranscriptionManager for file-based transcription
+        transcriptionManager.transcribe(audioFile, new TranscriptionProvider.TranscriptionCallback() {
+            @Override
+            public void onSuccess(String transcript, String segments) {
+                Log.d(TAG, "File transcription completed successfully");
+                processTranscriptionResult(meetingId, meetingTitle, transcript, calendarEvent);
+            }
+            
+            @Override
+            public void onProgress(int progressPercent) {
+                requireActivity().runOnUiThread(() -> {
+                    binding.textRecordingStatus.setText("Transcribing... " + progressPercent + "%");
+                });
+            }
+            
+            @Override
+            public void onError(String error) {
+                Log.e(TAG, "Transcription failed: " + error);
+                requireActivity().runOnUiThread(() -> {
+                    Toast.makeText(getContext(), 
+                        "Transcription failed: " + error, 
+                        Toast.LENGTH_LONG).show();
+                    binding.textRecordingStatus.setText("Ready to record");
+                });
+            }
+        });
+    }
+    
+    private void processTranscriptionResult(String meetingId, String meetingTitle, 
+                                          String transcript, CalendarService.EventInfo calendarEvent) {
+        Date meetingDate = new Date();
+        
+        // Save transcript
+        fileManager.saveTranscript(meetingId, meetingTitle, transcript, meetingDate);
+        
+        // Generate summary using OpenAI if available and enabled
+        if (openAIService != null && settingsManager.isAutoSummarizeEnabled()) {
+            openAIService.generateSummary(transcript, meetingTitle, 
+                new OpenAIService.SummaryCallback() {
+                    @Override
+                    public void onSuccess(String summary) {
+                        // Save summary
+                        fileManager.saveSummary(meetingId, meetingTitle, summary, meetingDate);
+                        
+                        // Update calendar if linked
+                        if (calendarEvent != null) {
+                            calendarService.updateCalendarEvent(calendarEvent.id, summary);
+                        }
+                        
+                        // Save metadata
+                        fileManager.saveMeetingMetadata(
+                            meetingId, 
+                            meetingTitle, 
+                            meetingDate,
+                            null, // audioFile path not needed for metadata
+                            calendarEvent != null ? String.valueOf(calendarEvent.id) : null
+                        );
+                        
+                        requireActivity().runOnUiThread(() -> {
+                            Toast.makeText(getContext(), 
+                                "Meeting processed successfully!", 
+                                Toast.LENGTH_LONG).show();
+                                
+                            // Show transcript in dialog
+                            showTranscriptDialog(meetingTitle, transcript, summary);
+                        });
+                    }
+                    
+                    @Override
+                    public void onError(String error) {
+                        Log.w(TAG, "Summary generation failed: " + error);
+                        // Save without summary
+                        saveMeetingWithoutSummary(meetingId, meetingTitle, transcript, meetingDate, calendarEvent);
+                    }
+                });
+        } else {
+            // Save without summary
+            saveMeetingWithoutSummary(meetingId, meetingTitle, transcript, meetingDate, calendarEvent);
+        }
+    }
+    
+    private void saveMeetingWithoutSummary(String meetingId, String meetingTitle, String transcript, 
+                                         Date meetingDate, CalendarService.EventInfo calendarEvent) {
+        // Save metadata without summary
+        fileManager.saveMeetingMetadata(
+            meetingId, 
+            meetingTitle, 
+            meetingDate,
+            null,
+            calendarEvent != null ? String.valueOf(calendarEvent.id) : null
+        );
+        
+        requireActivity().runOnUiThread(() -> {
+            Toast.makeText(getContext(), 
+                "Transcription completed!", 
+                Toast.LENGTH_LONG).show();
+                
+            // Show transcript in dialog (no summary)
+            showTranscriptDialog(meetingTitle, transcript, null);
+        });
+    }
+    
+    private void processWithOpenAIFallback(String meetingId, String meetingTitle, 
+                                         File audioFile, CalendarService.EventInfo calendarEvent) {
+        Log.d(TAG, "Using OpenAI as fallback for file transcription");
+        
+        requireActivity().runOnUiThread(() -> {
+            Toast.makeText(getContext(), 
+                "Android Speech not available for files. Using OpenAI Whisper...", 
+                Toast.LENGTH_SHORT).show();
+        });
+        
+        // Use OpenAI directly for file transcription
+        openAIService.transcribeAudio(audioFile, new OpenAIService.TranscriptionCallback() {
+            @Override
+            public void onSuccess(String transcript, org.json.JSONArray segments) {
+                Log.d(TAG, "OpenAI fallback transcription completed successfully");
+                processTranscriptionResult(meetingId, meetingTitle, transcript, calendarEvent);
+            }
+            
+            @Override
+            public void onError(String error) {
+                Log.e(TAG, "OpenAI fallback transcription failed: " + error);
+                requireActivity().runOnUiThread(() -> {
+                    Toast.makeText(getContext(), 
+                        "Transcription failed: " + error, 
+                        Toast.LENGTH_LONG).show();
+                    binding.textRecordingStatus.setText("Ready to record");
+                });
+            }
+        });
     }
 
     private void processWithOpenAI(String meetingId, String meetingTitle, 
@@ -814,6 +1054,55 @@ public class HomeFragment extends Fragment {
         manualEvent.title = "Create new calendar event";
         manualEvent.id = -1;
         return manualEvent;
+    }
+
+    private void startLiveTranscription() {
+        if (androidSpeechProvider == null || !androidSpeechProvider.isAvailable()) {
+            Log.w(TAG, "Android Speech Provider not available for live transcription");
+            return;
+        }
+        
+        Log.d(TAG, "Starting live transcription");
+        
+        androidSpeechProvider.startLiveTranscription(new TranscriptionProvider.TranscriptionCallback() {
+            @Override
+            public void onSuccess(String transcript, String segments) {
+                Log.d(TAG, "Live transcription completed: " + transcript);
+                liveTranscript = transcript;
+                
+                requireActivity().runOnUiThread(() -> {
+                    // Update UI with final transcript
+                    binding.textRecordingStatus.setText("Transcription complete");
+                });
+            }
+            
+            @Override
+            public void onProgress(int progressPercent) {
+                // Not used for live transcription
+            }
+            
+            @Override
+            public void onError(String error) {
+                Log.e(TAG, "Live transcription error: " + error);
+                requireActivity().runOnUiThread(() -> {
+                    binding.textRecordingStatus.setText("Recording in progress (no live transcription)");
+                });
+                // Don't clear liveTranscript here - it might have partial content
+            }
+            
+            @Override
+            public void onPartialResult(String partialTranscript) {
+                Log.d(TAG, "Partial transcript: " + partialTranscript);
+                requireActivity().runOnUiThread(() -> {
+                    // Show partial transcript in status
+                    if (partialTranscript.length() > 50) {
+                        binding.textRecordingStatus.setText("..." + partialTranscript.substring(partialTranscript.length() - 50));
+                    } else {
+                        binding.textRecordingStatus.setText(partialTranscript);
+                    }
+                });
+            }
+        });
     }
 
     private void startGradientAnimation() {
