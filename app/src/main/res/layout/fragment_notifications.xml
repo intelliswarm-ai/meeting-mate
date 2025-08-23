@@ -21,53 +21,6 @@
             android:textStyle="bold"
             android:layout_marginBottom="24dp" />
 
-        <!-- Transcription Provider Section -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Transcription Provider"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp" />
-
-                <Spinner
-                    android:id="@+id/spinner_transcription_provider"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp" />
-
-                <TextView
-                    android:id="@+id/text_provider_info"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Provider information will appear here"
-                    android:textSize="14sp"
-                    android:textColor="@android:color/darker_gray"
-                    android:layout_marginBottom="8dp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button_configure_provider"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Configure"
-                    style="@style/Widget.Material3.Button.TextButton" />
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
 
         <!-- API Key Section -->
         <com.google.android.material.card.MaterialCardView
@@ -87,7 +40,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="OpenAI API Key"
+                    android:text="OpenAI API Configuration"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="8dp" />
@@ -125,7 +78,7 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Local Model Section -->
+        <!-- Local Model Section - REMOVED -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_local_model"
             android:layout_width="match_parent"
@@ -262,6 +215,47 @@
                     android:id="@+id/spinner_language"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Debug & Analytics Section -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Debug &amp; Analytics"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="View crash reports, session logs and debug information"
+                    android:textSize="12sp"
+                    android:textColor="@android:color/darker_gray"
+                    android:layout_marginBottom="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_view_debug_logs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="📊 View Debug Logs &amp; Analytics"
+                    style="@style/Widget.Material3.Button.TextButton" />
 
             </LinearLayout>
 

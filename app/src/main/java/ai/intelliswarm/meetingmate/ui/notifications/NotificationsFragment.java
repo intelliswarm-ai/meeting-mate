@@ -1,5 +1,6 @@
 package ai.intelliswarm.meetingmate.ui.notifications;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import ai.intelliswarm.meetingmate.analytics.AppLogger;
+import ai.intelliswarm.meetingmate.analytics.LogViewerActivity;
 import ai.intelliswarm.meetingmate.databinding.FragmentNotificationsBinding;
 import ai.intelliswarm.meetingmate.utils.SettingsManager;
 import ai.intelliswarm.meetingmate.transcription.TranscriptionProvider;
@@ -30,35 +33,53 @@ public class NotificationsFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        NotificationsViewModel notificationsViewModel =
-                new ViewModelProvider(this).get(NotificationsViewModel.class);
+        try {
+            AppLogger.lifecycle("NotificationsFragment", "onCreateView");
+            
+            NotificationsViewModel notificationsViewModel =
+                    new ViewModelProvider(this).get(NotificationsViewModel.class);
+            AppLogger.d(TAG, "ViewModel created");
 
-        binding = FragmentNotificationsBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
+            binding = FragmentNotificationsBinding.inflate(inflater, container, false);
+            View root = binding.getRoot();
+            AppLogger.d(TAG, "Fragment view inflated successfully");
 
-        // Initialize services
-        settingsManager = SettingsManager.getInstance(requireContext());
-        transcriptionManager = new TranscriptionManager(requireContext());
+            // Initialize services
+            settingsManager = SettingsManager.getInstance(requireContext());
+            transcriptionManager = new TranscriptionManager(requireContext());
+            AppLogger.d(TAG, "Services initialized");
 
-        setupUI();
-        loadSettings();
-
-        return root;
+            setupUI();
+            AppLogger.d(TAG, "UI setup completed");
+            
+            loadSettings();
+            AppLogger.d(TAG, "Settings loaded");
+            
+            AppLogger.i(TAG, "NotificationsFragment initialized successfully");
+            return root;
+            
+        } catch (Exception e) {
+            AppLogger.e(TAG, "Error initializing NotificationsFragment", e);
+            
+            // Return a simple error view if initialization fails
+            android.widget.TextView errorView = new android.widget.TextView(requireContext());
+            errorView.setText("Error loading settings. Please check logs.");
+            errorView.setGravity(android.view.Gravity.CENTER);
+            errorView.setPadding(32, 32, 32, 32);
+            return errorView;
+        }
     }
 
     private void setupUI() {
-        // Setup transcription provider spinner
-        setupTranscriptionProviders();
-        
-        // Setup API key section
+        // Setup API key section - only OpenAI API key
         binding.buttonSaveApiKey.setOnClickListener(v -> saveApiKey());
         
-        // Setup provider configuration
-        binding.buttonConfigureProvider.setOnClickListener(v -> configureProvider());
-        
-        // Setup local model download (initially hidden)
-        binding.buttonDownloadModel.setOnClickListener(v -> downloadModel());
-        binding.buttonDeleteModel.setOnClickListener(v -> deleteModel());
+        // Setup debug logs button
+        binding.buttonViewDebugLogs.setOnClickListener(v -> {
+            AppLogger.userAction("NotificationsFragment", "debug_logs_clicked", null);
+            Intent intent = new Intent(requireContext(), LogViewerActivity.class);
+            startActivity(intent);
+        });
         
         // Setup general settings
         binding.checkboxAutoTranscribe.setOnCheckedChangeListener((buttonView, isChecked) -> 
@@ -74,80 +95,8 @@ public class NotificationsFragment extends Fragment {
         setupLanguageSpinner();
     }
     
-    private void setupTranscriptionProviders() {
-        List<String> providerNames = new ArrayList<>();
-        TranscriptionProvider[] providers = transcriptionManager.getAllProviders();
-        
-        for (TranscriptionProvider provider : providers) {
-            String name = provider.getType().getDisplayName();
-            if (!provider.isConfigured()) {
-                name += " (Not configured)";
-            }
-            providerNames.add(name);
-        }
-        
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-            requireContext(), 
-            android.R.layout.simple_spinner_item, 
-            providerNames
-        );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.spinnerTranscriptionProvider.setAdapter(adapter);
-        
-        binding.spinnerTranscriptionProvider.setOnItemSelectedListener(
-            new android.widget.AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
-                    TranscriptionProvider.ProviderType[] types = TranscriptionProvider.ProviderType.values();
-                    if (position < types.length) {
-                        settingsManager.setSelectedTranscriptionProvider(types[position]);
-                        updateProviderInfo(types[position]);
-                    }
-                }
-                
-                @Override
-                public void onNothingSelected(android.widget.AdapterView<?> parent) {}
-            }
-        );
-    }
     
-    private void updateProviderInfo(TranscriptionProvider.ProviderType type) {
-        TranscriptionProvider provider = transcriptionManager.getProvider(type);
-        if (provider != null) {
-            binding.textProviderInfo.setText(transcriptionManager.getProviderSetupInstructions(type));
-            
-            // Show/hide sections based on provider type
-            binding.cardApiKey.setVisibility(
-                type.requiresApiKey() ? View.VISIBLE : View.GONE
-            );
-            
-            binding.cardLocalModel.setVisibility(
-                type == TranscriptionProvider.ProviderType.LOCAL_WHISPER ? View.VISIBLE : View.GONE
-            );
-            
-            if (type == TranscriptionProvider.ProviderType.LOCAL_WHISPER) {
-                updateLocalModelStatus();
-            }
-        }
-    }
     
-    private void updateLocalModelStatus() {
-        LocalWhisperProvider localProvider = (LocalWhisperProvider) transcriptionManager.getProvider(
-            TranscriptionProvider.ProviderType.LOCAL_WHISPER
-        );
-        
-        if (localProvider != null) {
-            if (localProvider.isConfigured()) {
-                binding.textModelStatus.setText("Model downloaded and ready");
-                binding.buttonDownloadModel.setVisibility(View.GONE);
-                binding.buttonDeleteModel.setVisibility(View.VISIBLE);
-            } else {
-                binding.textModelStatus.setText("Model not downloaded");
-                binding.buttonDownloadModel.setVisibility(View.VISIBLE);
-                binding.buttonDeleteModel.setVisibility(View.GONE);
-            }
-        }
-    }
     
     private void setupAudioQualitySpinner() {
         SettingsManager.AudioQuality[] qualities = SettingsManager.AudioQuality.values();
@@ -216,16 +165,6 @@ public class NotificationsFragment extends Fragment {
             binding.editOpenaiKey.setHint("Current: " + maskedKey);
         }
         
-        // Load selected provider
-        TranscriptionProvider.ProviderType currentProvider = settingsManager.getSelectedTranscriptionProvider();
-        TranscriptionProvider.ProviderType[] types = TranscriptionProvider.ProviderType.values();
-        for (int i = 0; i < types.length; i++) {
-            if (types[i] == currentProvider) {
-                binding.spinnerTranscriptionProvider.setSelection(i);
-                updateProviderInfo(currentProvider);
-                break;
-            }
-        }
         
         // Load checkboxes
         binding.checkboxAutoTranscribe.setChecked(settingsManager.isAutoTranscribeEnabled());
@@ -289,8 +228,6 @@ public class NotificationsFragment extends Fragment {
                         String maskedKey = apiKey.substring(0, Math.min(8, apiKey.length())) + "...";
                         binding.editOpenaiKey.setHint("Current: " + maskedKey);
                         
-                        // Refresh provider list to show configuration status
-                        setupTranscriptionProviders();
                     } else {
                         Log.w(TAG, "API key validation failed: " + message);
                         Toast.makeText(requireContext(), "API key validation failed: " + message, Toast.LENGTH_LONG).show();
@@ -300,67 +237,7 @@ public class NotificationsFragment extends Fragment {
         });
     }
     
-    private void configureProvider() {
-        TranscriptionProvider.ProviderType selectedType = settingsManager.getSelectedTranscriptionProvider();
-        
-        if (selectedType.requiresApiKey() && !settingsManager.hasOpenAIApiKey()) {
-            Toast.makeText(requireContext(), "Please save your API key first", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        
-        Toast.makeText(requireContext(), 
-            selectedType.getDisplayName() + " is ready to use!", 
-            Toast.LENGTH_SHORT).show();
-    }
     
-    private void downloadModel() {
-        binding.progressModelDownload.setVisibility(View.VISIBLE);
-        binding.textDownloadProgress.setVisibility(View.VISIBLE);
-        binding.buttonDownloadModel.setEnabled(false);
-        
-        LocalWhisperProvider localProvider = (LocalWhisperProvider) transcriptionManager.getProvider(
-            TranscriptionProvider.ProviderType.LOCAL_WHISPER
-        );
-        
-        if (localProvider != null) {
-            localProvider.downloadModel(new LocalWhisperProvider.ModelDownloadCallback() {
-                @Override
-                public void onProgress(int percent, String message) {
-                    requireActivity().runOnUiThread(() -> {
-                        binding.progressModelDownload.setProgress(percent);
-                        binding.textDownloadProgress.setText(message);
-                    });
-                }
-                
-                @Override
-                public void onSuccess(String message) {
-                    requireActivity().runOnUiThread(() -> {
-                        binding.progressModelDownload.setVisibility(View.GONE);
-                        binding.textDownloadProgress.setVisibility(View.GONE);
-                        binding.buttonDownloadModel.setEnabled(true);
-                        updateLocalModelStatus();
-                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
-                    });
-                }
-                
-                @Override
-                public void onError(String error) {
-                    requireActivity().runOnUiThread(() -> {
-                        binding.progressModelDownload.setVisibility(View.GONE);
-                        binding.textDownloadProgress.setVisibility(View.GONE);
-                        binding.buttonDownloadModel.setEnabled(true);
-                        Toast.makeText(requireContext(), "Download failed: " + error, Toast.LENGTH_LONG).show();
-                    });
-                }
-            });
-        }
-    }
-    
-    private void deleteModel() {
-        // Implementation to delete local model files
-        Toast.makeText(requireContext(), "Model deleted", Toast.LENGTH_SHORT).show();
-        updateLocalModelStatus();
-    }
 
     @Override
     public void onDestroyView() {

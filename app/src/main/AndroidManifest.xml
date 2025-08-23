@@ -7,8 +7,9 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     
-    <!-- Permission for Android speech recognition -->
+    <!-- Internet and network permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     
     <!-- Query for speech recognition services -->
     <queries>
@@ -21,15 +22,12 @@
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
     
-    <!-- Internet permission for API calls -->
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    
     <!-- Foreground service permission for recording -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
 
     <application
+        android:name=".MeetingMateApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -56,6 +54,31 @@
             android:name=".service.AudioRecordingService"
             android:exported="false"
             android:foregroundServiceType="microphone" />
+            
+        <!-- Transcript Link Activity -->
+        <activity
+            android:name=".ui.transcription.TranscriptLinkActivity"
+            android:exported="false"
+            android:label="Link Transcript"
+            android:parentActivityName=".MainActivity" />
+            
+        <!-- Log Viewer Activity -->
+        <activity
+            android:name=".analytics.LogViewerActivity"
+            android:exported="false"
+            android:label="Debug Logs"
+            android:parentActivityName=".MainActivity" />
+            
+        <!-- FileProvider for sharing logs -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
             
     </application>
 

@@ -44,3 +44,15 @@
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
+
+# Apache POI - Keep all classes to avoid R8 issues
+-keep class org.apache.poi.** { *; }
+-keep class org.apache.xmlbeans.** { *; }
+-keep class org.apache.commons.** { *; }
+-dontwarn org.apache.batik.**
+-dontwarn org.osgi.**
+-dontwarn org.apache.logging.log4j.**
+
+# iTextPDF
+-keep class com.itextpdf.** { *; }
+-dontwarn com.itextpdf.**

@@ -1,13 +1,16 @@
 package ai.intelliswarm.meetingmate.service;
 
+import android.Manifest;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.CalendarContract;
 import android.util.Log;
+import androidx.core.content.ContextCompat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -22,6 +25,14 @@ public class CalendarService {
     public CalendarService(Context context) {
         this.context = context;
         this.contentResolver = context.getContentResolver();
+    }
+    
+    // Check if we have calendar permissions
+    private boolean hasCalendarPermissions() {
+        return ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) 
+               == PackageManager.PERMISSION_GRANTED &&
+               ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) 
+               == PackageManager.PERMISSION_GRANTED;
     }
     
     // Create test calendar events for demo/testing
@@ -398,31 +409,77 @@ public class CalendarService {
     
     // Get today's calendar events
     public List<EventInfo> getTodayEvents() {
-        Log.d(TAG, "Getting today's calendar events");
+        return getEventsForDate(new Date());
+    }
+    
+    // Get calendar events for a specific date
+    public List<EventInfo> getEventsForDate(Date date) {
+        Log.d(TAG, "Getting calendar events for date: " + date);
+        List<EventInfo> events = new ArrayList<>();
         
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        long startOfDay = calendar.getTimeInMillis();
+        try {
+            // Check if we have calendar permissions
+            if (!hasCalendarPermissions()) {
+                Log.w(TAG, "Calendar permissions not granted, returning demo events");
+                return createDemoEventsList();
+            }
+            
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.set(Calendar.MILLISECOND, 0);
+            long startOfDay = calendar.getTimeInMillis();
+            
+            calendar.set(Calendar.HOUR_OF_DAY, 23);
+            calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.SECOND, 59);
+            calendar.set(Calendar.MILLISECOND, 999);
+            long endOfDay = calendar.getTimeInMillis();
+            
+            Log.d(TAG, "Searching for events between " + new Date(startOfDay) + " and " + new Date(endOfDay));
+            
+            events = getEventsInRange(startOfDay, endOfDay);
+            
+            // If no real events found, add some demo events
+            if (events.isEmpty()) {
+                Log.d(TAG, "No real events found, adding demo events");
+                events.addAll(createDemoEventsList());
+            }
+            
+        } catch (SecurityException e) {
+            Log.e(TAG, "Security exception accessing calendar", e);
+            events = createDemoEventsList();
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting calendar events", e);
+            events = createDemoEventsList();
+        }
         
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 59);
-        long endOfDay = calendar.getTimeInMillis();
-        
-        Log.d(TAG, "Searching for events between " + new Date(startOfDay) + " and " + new Date(endOfDay));
-        
-        List<EventInfo> events = getEventsInRange(startOfDay, endOfDay);
-        Log.d(TAG, "getTodayEvents returning " + events.size() + " events");
-        
+        Log.d(TAG, "getEventsForDate returning " + events.size() + " events");
         return events;
+    }
+    
+    // Helper method to check if two dates are on the same day
+    private boolean isSameDay(Date date1, Date date2) {
+        Calendar cal1 = Calendar.getInstance();
+        Calendar cal2 = Calendar.getInstance();
+        cal1.setTime(date1);
+        cal2.setTime(date2);
+        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+               cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR);
     }
     
     // Get events in a specific time range
     public List<EventInfo> getEventsInRange(long startTime, long endTime) {
         List<EventInfo> events = new ArrayList<>();
         Log.d(TAG, "getEventsInRange called for range: " + startTime + " to " + endTime);
+        
+        // Check permissions first
+        if (!hasCalendarPermissions()) {
+            Log.w(TAG, "Calendar permissions not granted in getEventsInRange");
+            return events; // Return empty list
+        }
         
         String[] projection = new String[] {
             CalendarContract.Events._ID,

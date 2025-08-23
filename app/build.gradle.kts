@@ -30,7 +30,7 @@ android {
 
     defaultConfig {
         applicationId = "ai.intelliswarm.meetingmate"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 33
         versionCode = 1
         versionName = "1.0.0"
@@ -45,8 +45,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -105,6 +105,12 @@ dependencies {
     
     // Security for encrypted preferences
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    
+    // Export functionality - PDF and DOCX
+    implementation("com.itextpdf:itextg:5.5.10")
+    implementation("org.apache.poi:poi:5.2.4")
+    implementation("org.apache.poi:poi-ooxml:5.2.4")
+    implementation("org.apache.poi:poi-scratchpad:5.2.4")
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

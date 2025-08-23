@@ -128,12 +128,19 @@ public class SettingsManager {
     }
     
     public ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType getSelectedTranscriptionProvider() {
+        // Always default to OpenAI Whisper as it's the only reliable provider
         String providerName = sharedPreferences.getString(KEY_TRANSCRIPTION_PROVIDER, 
-            ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType.ANDROID_SPEECH.name());
+            ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType.OPENAI_WHISPER.name());
         try {
-            return ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType.valueOf(providerName);
+            ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType type = 
+                ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType.valueOf(providerName);
+            // Force OpenAI Whisper if other providers are selected (they're not working)
+            if (type != ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType.OPENAI_WHISPER) {
+                return ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType.OPENAI_WHISPER;
+            }
+            return type;
         } catch (IllegalArgumentException e) {
-            return ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType.ANDROID_SPEECH;
+            return ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType.OPENAI_WHISPER;
         }
     }
     

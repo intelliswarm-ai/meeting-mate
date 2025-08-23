@@ -21,13 +21,10 @@ public class TranscriptionManager {
     }
     
     private void initializeProviders() {
-        providers.put(TranscriptionProvider.ProviderType.ANDROID_SPEECH, 
-                     new AndroidSpeechProvider(context));
+        // Only use OpenAI Whisper for reliable transcription
         providers.put(TranscriptionProvider.ProviderType.OPENAI_WHISPER, 
                      new OpenAIWhisperProvider(context));
-        providers.put(TranscriptionProvider.ProviderType.LOCAL_WHISPER, 
-                     new LocalWhisperProvider(context));
-        // Add more providers here as needed
+        // Removed Android Speech and Local Whisper as they are not working correctly
     }
     
     /**

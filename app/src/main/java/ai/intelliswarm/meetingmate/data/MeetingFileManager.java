@@ -299,6 +299,50 @@ public class MeetingFileManager {
         return null;
     }
     
+    // Get all transcript files
+    public List<File> getAllTranscriptFiles() {
+        List<File> transcriptFiles = new ArrayList<>();
+        File transcriptsFolder = new File(rootDirectory, TRANSCRIPTS_FOLDER);
+        
+        if (transcriptsFolder.exists()) {
+            File[] files = transcriptsFolder.listFiles((dir, name) -> name.endsWith("_transcript.txt"));
+            if (files != null) {
+                for (File file : files) {
+                    transcriptFiles.add(file);
+                }
+            }
+        }
+        
+        // Also search in meeting folders for transcript files
+        File meetingsFolder = new File(rootDirectory, MEETINGS_FOLDER);
+        searchTranscriptFilesRecursively(meetingsFolder, transcriptFiles);
+        
+        return transcriptFiles;
+    }
+    
+    private void searchTranscriptFilesRecursively(File directory, List<File> transcriptFiles) {
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    searchTranscriptFilesRecursively(file, transcriptFiles);
+                } else if (file.getName().endsWith("_transcript.txt")) {
+                    // Check if we already have this file (to avoid duplicates)
+                    boolean isDuplicate = false;
+                    for (File existing : transcriptFiles) {
+                        if (existing.getName().equals(file.getName())) {
+                            isDuplicate = true;
+                            break;
+                        }
+                    }
+                    if (!isDuplicate) {
+                        transcriptFiles.add(file);
+                    }
+                }
+            }
+        }
+    }
+    
     // Helper class for meeting information
     public static class MeetingInfo {
         public String meetingId;

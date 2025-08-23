@@ -1,30 +1,59 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:pathData="M31,63.928c0,0 6.4,-11 12.1,-13.1c7.2,-2.6 26,-1.4 26,-1.4l38.1,38.1L107,108.928l-32,-1L31,63.928z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:endX="85.84757"
-                android:endY="92.4963"
-                android:startX="42.9492"
-                android:startY="49.59793"
-                android:type="linear">
-                <item
-                    android:color="#44000000"
-                    android:offset="0.0" />
-                <item
-                    android:color="#00000000"
-                    android:offset="1.0" />
-            </gradient>
-        </aapt:attr>
-    </path>
+
+    <!-- Background circle using path -->
+    <path
+        android:fillColor="@color/meetingmate_primary"
+        android:pathData="M54,6C81.6,6 104,28.4 104,56C104,83.6 81.6,106 54,106C26.4,106 4,83.6 4,56C4,28.4 26.4,6 54,6Z" />
+
+    <!-- Meeting table/conference icon -->
     <path
         android:fillColor="#FFFFFF"
+        android:pathData="M82,38H26C22.7,38 20,40.7 20,44V64C20,67.3 22.7,70 26,70H82C85.3,70 88,67.3 88,64V44C88,40.7 85.3,38 82,38Z" />
+
+    <!-- People around the table using paths -->
+    <path
+        android:fillColor="@color/meetingmate_secondary"
+        android:pathData="M32,24C35.3,24 38,26.7 38,30C38,33.3 35.3,36 32,36C28.7,36 26,33.3 26,30C26,26.7 28.7,24 32,24Z" />
+        
+    <path
+        android:fillColor="@color/meetingmate_secondary"
+        android:pathData="M54,20C57.3,20 60,22.7 60,26C60,29.3 57.3,32 54,32C50.7,32 48,29.3 48,26C48,22.7 50.7,20 54,20Z" />
+        
+    <path
+        android:fillColor="@color/meetingmate_secondary"
+        android:pathData="M76,24C79.3,24 82,26.7 82,30C82,33.3 79.3,36 76,36C72.7,36 70,33.3 70,30C70,26.7 72.7,24 76,24Z" />
+
+    <!-- Microphone in center -->
+    <path
+        android:fillColor="@color/meetingmate_accent"
+        android:pathData="M54,48C51.8,48 50,49.8 50,52V60C50,62.2 51.8,64 54,64C56.2,64 58,62.2 58,60V52C58,49.8 56.2,48 54,48Z" />
+
+    <!-- Audio waves -->
+    <path
+        android:strokeColor="@color/meetingmate_waves"
+        android:strokeWidth="3"
+        android:strokeAlpha="0.8"
         android:fillType="nonZero"
-        android:pathData="M65.3,45.828l3.8,-6.6c0.2,-0.4 0.1,-0.9 -0.3,-1.1c-0.4,-0.2 -0.9,-0.1 -1.1,0.3l-3.9,6.7c-6.3,-2.8 -13.4,-2.8 -19.7,0l-3.9,-6.7c-0.2,-0.4 -0.7,-0.5 -1.1,-0.3C38.8,38.328 38.7,38.828 38.9,39.228l3.8,6.6C36.2,49.428 31.7,56.028 31,63.928h46C76.3,56.028 71.8,49.428 65.3,45.828zM43.4,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2c-0.3,-0.7 -0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C45.3,56.528 44.5,57.328 43.4,57.328L43.4,57.328zM64.6,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2s-0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C66.5,56.528 65.6,57.328 64.6,57.328L64.6,57.328z"
-        android:strokeWidth="1"
-        android:strokeColor="#00000000" />
+        android:pathData="M42,56C42,52 46,48 50,48M66,56C66,52 62,48 58,48M42,56C42,60 46,64 50,64M66,56C66,60 62,64 58,64" />
+
+    <!-- Transcript/document indicator -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M70,78H38C36.3,78 35,79.3 35,81V87C35,88.7 36.3,90 38,90H70C71.7,90 73,88.7 73,87V81C73,79.3 71.7,78 70,78Z" />
+    
+    <!-- Lines representing text -->
+    <path
+        android:strokeColor="@color/meetingmate_text"
+        android:strokeWidth="2"
+        android:pathData="M42,82H66M42,86H58" />
+
+    <!-- Small recording indicator using path -->
+    <path
+        android:fillColor="#FF5722"
+        android:pathData="M76,79C78.2,79 80,80.8 80,83C80,85.2 78.2,87 76,87C73.8,87 72,85.2 72,83C72,80.8 73.8,79 76,79Z" />
+
 </vector>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Meeting table/conference icon -->
+    <path
+        android:fillColor="@color/meetingmate_primary"
+        android:pathData="M20,8H4C2.9,8 2,8.9 2,10V14C2,15.1 2.9,16 4,16H20C21.1,16 22,15.1 22,14V10C22,8.9 21.1,8 20,8Z" />
+
+    <!-- People around the table using paths -->
+    <path
+        android:fillColor="@color/meetingmate_secondary"
+        android:pathData="M6,3.5C7.38,3.5 8.5,4.62 8.5,6C8.5,7.38 7.38,8.5 6,8.5C4.62,8.5 3.5,7.38 3.5,6C3.5,4.62 4.62,3.5 6,3.5Z" />
+        
+    <path
+        android:fillColor="@color/meetingmate_secondary"
+        android:pathData="M12,2.5C13.38,2.5 14.5,3.62 14.5,5C14.5,6.38 13.38,7.5 12,7.5C10.62,7.5 9.5,6.38 9.5,5C9.5,3.62 10.62,2.5 12,2.5Z" />
+        
+    <path
+        android:fillColor="@color/meetingmate_secondary"
+        android:pathData="M18,3.5C19.38,3.5 20.5,4.62 20.5,6C20.5,7.38 19.38,8.5 18,8.5C16.62,8.5 15.5,7.38 15.5,6C15.5,4.62 16.62,3.5 18,3.5Z" />
+
+    <!-- Microphone in center of table -->
+    <path
+        android:fillColor="@color/meetingmate_accent"
+        android:pathData="M12,10.5C11.17,10.5 10.5,11.17 10.5,12V13C10.5,13.83 11.17,14.5 12,14.5C12.83,14.5 13.5,13.83 13.5,13V12C13.5,11.17 12.83,10.5 12,10.5Z" />
+
+    <!-- Audio waves -->
+    <path
+        android:strokeColor="@color/meetingmate_waves"
+        android:strokeWidth="1.2"
+        android:strokeAlpha="0.7"
+        android:fillType="nonZero"
+        android:pathData="M8.5,12.5C8.5,11.5 9,11 9.5,11M15.5,12.5C15.5,11.5 15,11 14.5,11M8.5,12.5C8.5,13.5 9,14 9.5,14M15.5,12.5C15.5,13.5 15,14 14.5,14" />
+
+    <!-- Transcript/document indicator -->
+    <path
+        android:fillColor="@color/meetingmate_document"
+        android:pathData="M16,18H8C7.45,18 7,18.45 7,19V21C7,21.55 7.45,22 8,22H16C16.55,22 17,21.55 17,21V19C17,18.45 16.55,18 16,18Z" />
+    
+    <!-- Lines representing text -->
+    <path
+        android:strokeColor="@color/meetingmate_text"
+        android:strokeWidth="0.8"
+        android:pathData="M9,19.5H15M9,20.5H13" />
+
+</vector>
