@@ -15,6 +15,7 @@ public class SettingsManager {
     private static final String KEY_AUTO_SUMMARIZE = "auto_summarize";
     private static final String KEY_AUDIO_QUALITY = "audio_quality";
     private static final String KEY_TRANSCRIPT_LANGUAGE = "transcript_language";
+    private static final String KEY_TRANSCRIPTION_PROVIDER = "transcription_provider";
     
     private SharedPreferences sharedPreferences;
     private static SettingsManager instance;
@@ -109,6 +110,21 @@ public class SettingsManager {
     
     public String getTranscriptLanguage() {
         return sharedPreferences.getString(KEY_TRANSCRIPT_LANGUAGE, "en");
+    }
+    
+    // Transcription Provider Setting
+    public void setSelectedTranscriptionProvider(ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType type) {
+        sharedPreferences.edit().putString(KEY_TRANSCRIPTION_PROVIDER, type.name()).apply();
+    }
+    
+    public ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType getSelectedTranscriptionProvider() {
+        String providerName = sharedPreferences.getString(KEY_TRANSCRIPTION_PROVIDER, 
+            ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType.OPENAI_WHISPER.name());
+        try {
+            return ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType.valueOf(providerName);
+        } catch (IllegalArgumentException e) {
+            return ai.intelliswarm.meetingmate.transcription.TranscriptionProvider.ProviderType.OPENAI_WHISPER;
+        }
     }
     
     // Clear all settings
