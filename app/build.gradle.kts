@@ -59,6 +59,10 @@ android {
         debug {
             isDebuggable = true
             versionNameSuffix = "-DEBUG"
+            // Use release signing config for debug builds too
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
     compileOptions {

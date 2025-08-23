@@ -34,12 +34,38 @@ public class MeetingFileManager {
     }
     
     private void initializeDirectories() {
-        // Create root directory in Documents folder
-        File documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-        rootDirectory = new File(documentsDir, ROOT_FOLDER);
+        // For Android 11+ (API 30+), use app-specific storage (no permissions needed)
+        // For older versions, try external storage first, fallback to app-specific
         
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            // Android 11+: Use app-specific external storage (no permissions needed)
+            File appSpecificDir = context.getExternalFilesDir(null);
+            if (appSpecificDir != null) {
+                rootDirectory = new File(appSpecificDir, ROOT_FOLDER);
+                Log.d(TAG, "Using app-specific storage for Android 11+: " + rootDirectory.getAbsolutePath());
+            } else {
+                // Fallback to internal storage
+                rootDirectory = new File(context.getFilesDir(), ROOT_FOLDER);
+                Log.d(TAG, "Fallback to internal storage: " + rootDirectory.getAbsolutePath());
+            }
+        } else {
+            // Android 10 and below: Try external storage first
+            try {
+                File documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+                rootDirectory = new File(documentsDir, ROOT_FOLDER);
+                Log.d(TAG, "Using external storage for Android 10 and below: " + rootDirectory.getAbsolutePath());
+            } catch (Exception e) {
+                Log.w(TAG, "External storage not available, using app-specific storage", e);
+                rootDirectory = new File(context.getExternalFilesDir(null), ROOT_FOLDER);
+            }
+        }
+        
+        // Create the directory
         if (!rootDirectory.exists()) {
-            rootDirectory.mkdirs();
+            boolean created = rootDirectory.mkdirs();
+            Log.d(TAG, "Root directory created: " + created + " at " + rootDirectory.getAbsolutePath());
+        } else {
+            Log.d(TAG, "Root directory already exists: " + rootDirectory.getAbsolutePath());
         }
         
         // Create subdirectories

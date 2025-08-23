@@ -112,33 +112,61 @@ public class HomeFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
+        try {
+            Log.d(TAG, "HomeFragment onCreateView started");
+            
+            homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
+            Log.d(TAG, "HomeViewModel created");
 
-        binding = FragmentHomeBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
+            binding = FragmentHomeBinding.inflate(inflater, container, false);
+            View root = binding.getRoot();
+            Log.d(TAG, "Fragment view inflated successfully");
 
-        // Initialize services
-        fileManager = new MeetingFileManager(requireContext());
-        calendarService = new CalendarService(requireContext());
-        settingsManager = SettingsManager.getInstance(requireContext());
-        transcriptionManager = new TranscriptionManager(requireContext());
-        
-        // Get Android Speech Provider for live transcription
-        androidSpeechProvider = (AndroidSpeechProvider) transcriptionManager.getProvider(
-            TranscriptionProvider.ProviderType.ANDROID_SPEECH
-        );
-        
-        if (settingsManager.hasOpenAIApiKey()) {
-            Log.d(TAG, "Initializing OpenAI service with saved API key");
-            openAIService = new OpenAIService(settingsManager.getOpenAIApiKey());
-        } else {
-            Log.w(TAG, "No OpenAI API key found - OpenAI service not initialized");
+            // Initialize services
+            fileManager = new MeetingFileManager(requireContext());
+            Log.d(TAG, "MeetingFileManager initialized");
+            
+            calendarService = new CalendarService(requireContext());
+            Log.d(TAG, "CalendarService initialized");
+            
+            settingsManager = SettingsManager.getInstance(requireContext());
+            Log.d(TAG, "SettingsManager initialized");
+            
+            transcriptionManager = new TranscriptionManager(requireContext());
+            Log.d(TAG, "TranscriptionManager initialized");
+            
+            // Get Android Speech Provider for live transcription
+            androidSpeechProvider = (AndroidSpeechProvider) transcriptionManager.getProvider(
+                TranscriptionProvider.ProviderType.ANDROID_SPEECH
+            );
+            Log.d(TAG, "AndroidSpeechProvider retrieved: " + (androidSpeechProvider != null));
+            
+            if (settingsManager.hasOpenAIApiKey()) {
+                Log.d(TAG, "Initializing OpenAI service with saved API key");
+                openAIService = new OpenAIService(settingsManager.getOpenAIApiKey());
+            } else {
+                Log.w(TAG, "No OpenAI API key found - OpenAI service not initialized");
+            }
+
+            setupUI();
+            Log.d(TAG, "UI setup completed");
+            
+            requestPermissions();
+            Log.d(TAG, "Permissions requested");
+            
+            Log.d(TAG, "HomeFragment initialized successfully");
+            return root;
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Error initializing HomeFragment", e);
+            
+            // Return a simple error view if initialization fails
+            android.widget.TextView errorView = new android.widget.TextView(requireContext());
+            errorView.setText("Error loading recorder. Please check logs.");
+            errorView.setGravity(android.view.Gravity.CENTER);
+            errorView.setPadding(32, 32, 32, 32);
+            return errorView;
         }
-
-        setupUI();
-        requestPermissions();
-        
-        return root;
     }
 
     private void setupUI() {
