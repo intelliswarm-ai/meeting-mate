@@ -24,6 +24,80 @@ public class CalendarService {
         this.contentResolver = context.getContentResolver();
     }
     
+    // Create test calendar events for demo/testing
+    public boolean createTestEvents() {
+        Log.d(TAG, "Creating test calendar events");
+        
+        // First, get the primary calendar
+        long calendarId = getPrimaryCalendarId();
+        if (calendarId == -1) {
+            Log.e(TAG, "No calendar found to create test events");
+            return false;
+        }
+        
+        // Create several test events for today
+        Calendar cal = Calendar.getInstance();
+        boolean success = true;
+        
+        // Event 1: Morning meeting
+        cal.set(Calendar.HOUR_OF_DAY, 9);
+        cal.set(Calendar.MINUTE, 0);
+        Date start1 = cal.getTime();
+        cal.add(Calendar.HOUR, 1);
+        Date end1 = cal.getTime();
+        long eventId1 = addMeetingToCalendar(calendarId, "Morning Standup", 
+            "Daily team sync meeting", start1, end1, "Conference Room A");
+        if (eventId1 == -1) success = false;
+        
+        // Event 2: Afternoon meeting
+        cal.set(Calendar.HOUR_OF_DAY, 14);
+        cal.set(Calendar.MINUTE, 30);
+        Date start2 = cal.getTime();
+        cal.add(Calendar.HOUR, 1);
+        Date end2 = cal.getTime();
+        long eventId2 = addMeetingToCalendar(calendarId, "Project Review", 
+            "Q4 project status review", start2, end2, "Zoom");
+        if (eventId2 == -1) success = false;
+        
+        // Event 3: Late afternoon meeting
+        cal.set(Calendar.HOUR_OF_DAY, 16);
+        cal.set(Calendar.MINUTE, 0);
+        Date start3 = cal.getTime();
+        cal.add(Calendar.MINUTE, 30);
+        Date end3 = cal.getTime();
+        long eventId3 = addMeetingToCalendar(calendarId, "Client Call", 
+            "Weekly sync with client", start3, end3, "Phone");
+        if (eventId3 == -1) success = false;
+        
+        Log.d(TAG, "Test events created: " + success);
+        return success;
+    }
+    
+    // Get the primary calendar ID
+    private long getPrimaryCalendarId() {
+        String[] projection = new String[] {
+            CalendarContract.Calendars._ID,
+            CalendarContract.Calendars.IS_PRIMARY
+        };
+        
+        try (Cursor cursor = contentResolver.query(
+            CalendarContract.Calendars.CONTENT_URI,
+            projection,
+            null,
+            null,
+            null)) {
+            
+            if (cursor != null && cursor.moveToFirst()) {
+                // Return first calendar found (usually the primary one)
+                return cursor.getLong(0);
+            }
+        } catch (SecurityException e) {
+            Log.e(TAG, "Calendar permission not granted", e);
+        }
+        
+        return -1;
+    }
+    
     // Get all available calendars
     public List<CalendarInfo> getAvailableCalendars() {
         List<CalendarInfo> calendars = new ArrayList<>();
@@ -33,7 +107,8 @@ public class CalendarService {
             CalendarContract.Calendars.ACCOUNT_NAME,
             CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
             CalendarContract.Calendars.OWNER_ACCOUNT,
-            CalendarContract.Calendars.CALENDAR_COLOR
+            CalendarContract.Calendars.CALENDAR_COLOR,
+            CalendarContract.Calendars.ACCOUNT_TYPE
         };
         
         try (Cursor cursor = contentResolver.query(
@@ -51,7 +126,9 @@ public class CalendarService {
                     info.displayName = cursor.getString(2);
                     info.ownerAccount = cursor.getString(3);
                     info.color = cursor.getInt(4);
+                    info.accountType = cursor.getString(5);
                     calendars.add(info);
+                    Log.d(TAG, "Found calendar: " + info.displayName + " (" + info.accountType + ")");
                 }
             }
         } catch (SecurityException e) {
@@ -59,6 +136,216 @@ public class CalendarService {
         }
         
         return calendars;
+    }
+    
+    // Get available calendar sources (Google, Local, etc.)
+    public List<CalendarSource> getAvailableCalendarSources() {
+        List<CalendarSource> sources = new ArrayList<>();
+        List<CalendarInfo> calendars = getAvailableCalendars();
+        
+        // Group calendars by account type
+        boolean hasGoogle = false;
+        boolean hasLocal = false;
+        boolean hasOther = false;
+        
+        for (CalendarInfo cal : calendars) {
+            if (cal.accountType != null) {
+                if (cal.accountType.contains("com.google")) {
+                    hasGoogle = true;
+                } else if (cal.accountType.contains("LOCAL") || cal.accountType.contains("local")) {
+                    hasLocal = true;
+                } else {
+                    hasOther = true;
+                }
+            } else {
+                hasLocal = true; // Assume local if no account type
+            }
+        }
+        
+        if (hasGoogle) {
+            CalendarSource google = new CalendarSource();
+            google.name = "Google Calendar";
+            google.type = "google";
+            google.icon = "📅";
+            sources.add(google);
+        }
+        
+        if (hasLocal) {
+            CalendarSource local = new CalendarSource();
+            local.name = "Local Calendar";
+            local.type = "local";
+            local.icon = "📱";
+            sources.add(local);
+        }
+        
+        if (hasOther) {
+            CalendarSource other = new CalendarSource();
+            other.name = "Other Calendars";
+            other.type = "other";
+            other.icon = "📋";
+            sources.add(other);
+        }
+        
+        // Always add test events option
+        CalendarSource test = new CalendarSource();
+        test.name = "📎 Load Test Events";
+        test.type = "test";
+        test.icon = "🧪";
+        sources.add(test);
+        
+        Log.d(TAG, "Found " + sources.size() + " calendar sources");
+        return sources;
+    }
+    
+    // Get events for a specific calendar source
+    public List<EventInfo> getEventsForSource(String sourceType) {
+        Log.d(TAG, "Getting events for source: " + sourceType);
+        
+        if ("test".equals(sourceType)) {
+            return createDemoEventsList();
+        }
+        
+        List<CalendarInfo> calendars = getAvailableCalendars();
+        List<CalendarInfo> sourceCalendars = new ArrayList<>();
+        
+        // Filter calendars by source type
+        for (CalendarInfo cal : calendars) {
+            boolean matches = false;
+            
+            if ("google".equals(sourceType) && cal.accountType != null && cal.accountType.contains("com.google")) {
+                matches = true;
+            } else if ("local".equals(sourceType) && (cal.accountType == null || 
+                       cal.accountType.contains("LOCAL") || cal.accountType.contains("local"))) {
+                matches = true;
+            } else if ("other".equals(sourceType) && cal.accountType != null && 
+                       !cal.accountType.contains("com.google") && 
+                       !cal.accountType.contains("LOCAL") && !cal.accountType.contains("local")) {
+                matches = true;
+            }
+            
+            if (matches) {
+                sourceCalendars.add(cal);
+            }
+        }
+        
+        // Get today's events from these calendars
+        List<EventInfo> events = new ArrayList<>();
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        long startOfDay = calendar.getTimeInMillis();
+        
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        long endOfDay = calendar.getTimeInMillis();
+        
+        for (CalendarInfo cal : sourceCalendars) {
+            List<EventInfo> calendarEvents = getEventsForCalendar(cal.id, startOfDay, endOfDay);
+            events.addAll(calendarEvents);
+        }
+        
+        Log.d(TAG, "Found " + events.size() + " events for source " + sourceType);
+        return events;
+    }
+    
+    // Get events for a specific calendar
+    public List<EventInfo> getEventsForCalendar(long calendarId, long startTime, long endTime) {
+        List<EventInfo> events = new ArrayList<>();
+        
+        String[] projection = new String[] {
+            CalendarContract.Events._ID,
+            CalendarContract.Events.TITLE,
+            CalendarContract.Events.DESCRIPTION,
+            CalendarContract.Events.DTSTART,
+            CalendarContract.Events.DTEND,
+            CalendarContract.Events.EVENT_LOCATION,
+            CalendarContract.Events.CALENDAR_ID
+        };
+        
+        String selection = "((" + CalendarContract.Events.DTSTART + " >= ?) AND (" 
+                        + CalendarContract.Events.DTSTART + " <= ?) AND (" 
+                        + CalendarContract.Events.CALENDAR_ID + " = ?))";
+        String[] selectionArgs = new String[] {
+            String.valueOf(startTime),
+            String.valueOf(endTime),
+            String.valueOf(calendarId)
+        };
+        
+        try (Cursor cursor = contentResolver.query(
+            CalendarContract.Events.CONTENT_URI,
+            projection,
+            selection,
+            selectionArgs,
+            CalendarContract.Events.DTSTART + " ASC")) {
+            
+            if (cursor != null) {
+                while (cursor.moveToNext()) {
+                    EventInfo info = new EventInfo();
+                    info.id = cursor.getLong(0);
+                    info.title = cursor.getString(1);
+                    info.description = cursor.getString(2);
+                    info.startTime = new Date(cursor.getLong(3));
+                    info.endTime = new Date(cursor.getLong(4));
+                    info.location = cursor.getString(5);
+                    info.calendarId = cursor.getLong(6);
+                    events.add(info);
+                }
+            }
+        } catch (SecurityException e) {
+            Log.e(TAG, "Calendar permission not granted", e);
+        }
+        
+        return events;
+    }
+    
+    // Create demo events list without adding to calendar
+    private List<EventInfo> createDemoEventsList() {
+        List<EventInfo> demoEvents = new ArrayList<>();
+        Calendar cal = Calendar.getInstance();
+        
+        // Demo Event 1: Morning Standup
+        EventInfo event1 = new EventInfo();
+        event1.id = 1001;
+        event1.title = "Morning Standup";
+        cal.set(Calendar.HOUR_OF_DAY, 9);
+        cal.set(Calendar.MINUTE, 0);
+        event1.startTime = cal.getTime();
+        cal.add(Calendar.HOUR, 1);
+        event1.endTime = cal.getTime();
+        event1.description = "Daily team sync";
+        event1.location = "Conference Room A";
+        demoEvents.add(event1);
+        
+        // Demo Event 2: Project Review
+        EventInfo event2 = new EventInfo();
+        event2.id = 1002;
+        event2.title = "Project Review";
+        cal.set(Calendar.HOUR_OF_DAY, 14);
+        cal.set(Calendar.MINUTE, 30);
+        event2.startTime = cal.getTime();
+        cal.add(Calendar.HOUR, 1);
+        event2.endTime = cal.getTime();
+        event2.description = "Q4 project status review";
+        event2.location = "Zoom Meeting";
+        demoEvents.add(event2);
+        
+        // Demo Event 3: Client Call
+        EventInfo event3 = new EventInfo();
+        event3.id = 1003;
+        event3.title = "Client Call";
+        cal.set(Calendar.HOUR_OF_DAY, 16);
+        cal.set(Calendar.MINUTE, 0);
+        event3.startTime = cal.getTime();
+        cal.add(Calendar.MINUTE, 30);
+        event3.endTime = cal.getTime();
+        event3.description = "Weekly sync with client";
+        event3.location = "Phone";
+        demoEvents.add(event3);
+        
+        Log.d(TAG, "Created " + demoEvents.size() + " demo events");
+        return demoEvents;
     }
     
     // Add meeting notes to calendar
@@ -268,10 +555,22 @@ public class CalendarService {
         public String displayName;
         public String ownerAccount;
         public int color;
+        public String accountType;
         
         @Override
         public String toString() {
             return displayName != null ? displayName : accountName;
+        }
+    }
+    
+    public static class CalendarSource {
+        public String name;
+        public String type;
+        public String icon;
+        
+        @Override
+        public String toString() {
+            return (icon != null ? icon + " " : "") + name;
         }
     }
     

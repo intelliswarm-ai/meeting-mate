@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-selector xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <!-- Recording state -->
+    <item android:id="@+id/recording"
+        android:state_activated="true">
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="sweep"
+                android:centerX="0.5"
+                android:centerY="0.5"
+                android:startColor="#E91E63"
+                android:centerColor="#FF5722"
+                android:endColor="#E91E63" />
+        </shape>
+    </item>
+    
+    <!-- Default state -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="45"
+                android:startColor="#00000000"
+                android:endColor="#00000000" />
+        </shape>
+    </item>
+    
+</animated-selector>

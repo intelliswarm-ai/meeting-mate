@@ -5,17 +5,42 @@
 # For more details, see
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Preserve line number information for debugging stack traces.
+-keepattributes SourceFile,LineNumberTable
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Keep custom data classes
+-keep class ai.intelliswarm.meetingmate.data.** { *; }
+-keep class ai.intelliswarm.meetingmate.service.** { *; }
+-keep class ai.intelliswarm.meetingmate.transcription.** { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep calendar service inner classes
+-keep class ai.intelliswarm.meetingmate.service.CalendarService$* { *; }
+-keep class ai.intelliswarm.meetingmate.data.MeetingFileManager$* { *; }
+
+# OkHttp and Retrofit
+-dontwarn okhttp3.**
+-dontwarn okio.**
+-dontwarn retrofit2.**
+-keep class retrofit2.** { *; }
+-keepattributes Signature
+-keepattributes Exceptions
+
+# Gson
+-keepattributes Signature
+-keepattributes *Annotation*
+-keep class com.google.gson.stream.** { *; }
+
+# Room (if you add it later)
+-dontwarn androidx.room.paging.**
+
+# Security Crypto
+-keep class androidx.security.crypto.** { *; }
+
+# Dexter permissions
+-keep class com.karumi.dexter.** { *; }
+
+# Keep enums
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}

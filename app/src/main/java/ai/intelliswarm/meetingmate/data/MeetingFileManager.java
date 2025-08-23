@@ -2,6 +2,7 @@ package ai.intelliswarm.meetingmate.data;
 
 import android.content.Context;
 import android.os.Environment;
+import android.util.Log;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.BufferedReader;
@@ -15,7 +16,9 @@ import java.util.List;
 import org.json.JSONObject;
 import org.json.JSONException;
 
+
 public class MeetingFileManager {
+    private static final String TAG = "MeetingFileManager";
     private static final String ROOT_FOLDER = "MeetingMate";
     private static final String MEETINGS_FOLDER = "Meetings";
     private static final String AUDIO_FOLDER = "Audio";
@@ -87,9 +90,11 @@ public class MeetingFileManager {
     
     // Save transcript
     public boolean saveTranscript(String meetingId, String title, String transcript, Date meetingDate) {
+        Log.d(TAG, "Saving transcript for meeting: " + meetingId + ", title: " + title);
         try {
             File meetingFolder = getMeetingFolder(meetingDate);
             File transcriptFile = new File(meetingFolder, meetingId + "_transcript.txt");
+            Log.d(TAG, "Saving transcript to: " + transcriptFile.getAbsolutePath());
             
             FileWriter writer = new FileWriter(transcriptFile);
             writer.write("Meeting Title: " + title + "\n");
@@ -105,8 +110,10 @@ public class MeetingFileManager {
             centralWriter.write(transcript);
             centralWriter.close();
             
+            Log.d(TAG, "Transcript saved successfully");
             return true;
         } catch (IOException e) {
+            Log.e(TAG, "Failed to save transcript", e);
             e.printStackTrace();
             return false;
         }
@@ -170,9 +177,11 @@ public class MeetingFileManager {
     public List<MeetingInfo> getMeetingsForDate(Date date) {
         List<MeetingInfo> meetings = new ArrayList<>();
         File meetingFolder = getMeetingFolder(date);
+        Log.d(TAG, "Getting meetings from folder: " + meetingFolder.getAbsolutePath());
         
         if (meetingFolder.exists()) {
             File[] metadataFiles = meetingFolder.listFiles((dir, name) -> name.endsWith("_metadata.json"));
+            Log.d(TAG, "Found " + (metadataFiles != null ? metadataFiles.length : 0) + " metadata files");
             
             if (metadataFiles != null) {
                 for (File metadataFile : metadataFiles) {
