@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,9 +44,11 @@ import ai.intelliswarm.meetingmate.service.AudioRecordingService;
 import ai.intelliswarm.meetingmate.service.CalendarService;
 import ai.intelliswarm.meetingmate.service.OpenAIService;
 import ai.intelliswarm.meetingmate.utils.SettingsManager;
+import ai.intelliswarm.meetingmate.transcription.TranscriptionManager;
 
 public class HomeFragment extends Fragment {
-
+    
+    private static final String TAG = "HomeFragment";
     private FragmentHomeBinding binding;
     private HomeViewModel homeViewModel;
     private AudioRecordingService recordingService;
@@ -59,6 +62,7 @@ public class HomeFragment extends Fragment {
     private CalendarService calendarService;
     private OpenAIService openAIService;
     private SettingsManager settingsManager;
+    private TranscriptionManager transcriptionManager;
     
     private List<CalendarService.EventInfo> todayEvents = new ArrayList<>();
 
@@ -104,7 +108,10 @@ public class HomeFragment extends Fragment {
         settingsManager = SettingsManager.getInstance(requireContext());
         
         if (settingsManager.hasOpenAIApiKey()) {
+            Log.d(TAG, "Initializing OpenAI service with saved API key");
             openAIService = new OpenAIService(settingsManager.getOpenAIApiKey());
+        } else {
+            Log.w(TAG, "No OpenAI API key found - OpenAI service not initialized");
         }
 
         setupUI();
@@ -298,6 +305,30 @@ public class HomeFragment extends Fragment {
 
     private void processWithOpenAI(String meetingId, String meetingTitle, 
                                   File audioFile, CalendarService.EventInfo calendarEvent) {
+        Log.d(TAG, "Starting OpenAI processing for meeting: " + meetingTitle);
+        
+        // Check if OpenAI service is available
+        if (openAIService == null) {
+            Log.e(TAG, "OpenAI service not available - not initialized");
+            requireActivity().runOnUiThread(() -> {
+                Toast.makeText(getContext(), 
+                    "OpenAI service not available. Please configure your API key in settings.", 
+                    Toast.LENGTH_LONG).show();
+            });
+            return;
+        }
+        
+        // Double-check API key is still valid
+        if (!settingsManager.hasOpenAIApiKey()) {
+            Log.e(TAG, "OpenAI API key missing during processing");
+            requireActivity().runOnUiThread(() -> {
+                Toast.makeText(getContext(), 
+                    "OpenAI API key missing. Please configure it in settings.", 
+                    Toast.LENGTH_LONG).show();
+            });
+            return;
+        }
+        
         // Transcribe audio
         openAIService.transcribeAudio(audioFile, new OpenAIService.TranscriptionCallback() {
             @Override

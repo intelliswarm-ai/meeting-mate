@@ -1,5 +1,6 @@
 package ai.intelliswarm.meetingmate.service;
 
+import android.util.Log;
 import okhttp3.*;
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class OpenAIService {
+    private static final String TAG = "OpenAIService";
     private static final String WHISPER_API_URL = "https://api.openai.com/v1/audio/transcriptions";
     private static final String CHAT_API_URL = "https://api.openai.com/v1/chat/completions";
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
@@ -18,6 +20,8 @@ public class OpenAIService {
     
     public OpenAIService(String apiKey) {
         this.apiKey = apiKey;
+        Log.d(TAG, "OpenAIService created with API key: " + (apiKey != null && !apiKey.isEmpty() ? 
+            apiKey.substring(0, Math.min(8, apiKey.length())) + "..." : "EMPTY"));
         this.client = new OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
@@ -27,6 +31,8 @@ public class OpenAIService {
     
     // Transcribe audio using Whisper API
     public void transcribeAudio(File audioFile, TranscriptionCallback callback) {
+        Log.d(TAG, "Starting audio transcription for file: " + audioFile.getName() + " (size: " + audioFile.length() + " bytes)");
+        
         RequestBody requestBody = new MultipartBody.Builder()
             .setType(MultipartBody.FORM)
             .addFormDataPart("model", "whisper-1")
@@ -41,30 +47,54 @@ public class OpenAIService {
             .header("Authorization", "Bearer " + apiKey)
             .post(requestBody)
             .build();
+            
+        Log.d(TAG, "Sending transcription request to OpenAI API");
         
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                Log.e(TAG, "Transcription request failed: " + e.getMessage(), e);
                 callback.onError("Transcription failed: " + e.getMessage());
             }
             
             @Override
             public void onResponse(Call call, Response response) throws IOException {
+                Log.d(TAG, "Received transcription response with code: " + response.code());
+                
                 if (response.isSuccessful()) {
                     try {
                         String responseBody = response.body().string();
+                        Log.d(TAG, "Transcription response received, parsing JSON...");
                         JSONObject json = new JSONObject(responseBody);
                         String transcript = json.getString("text");
+                        
+                        Log.d(TAG, "Transcription successful, text length: " + transcript.length());
                         
                         // Get segments if available for timestamps
                         JSONArray segments = json.optJSONArray("segments");
                         
                         callback.onSuccess(transcript, segments);
                     } catch (JSONException e) {
+                        Log.e(TAG, "Failed to parse transcription JSON response", e);
                         callback.onError("Failed to parse transcription response: " + e.getMessage());
                     }
                 } else {
-                    callback.onError("Transcription failed with code: " + response.code());
+                    String errorMessage = "Transcription failed with code: " + response.code();
+                    if (response.code() == 401) {
+                        errorMessage += " - Invalid or missing API key. Please check your OpenAI API key in settings.";
+                        Log.e(TAG, "401 Unauthorized - API key issue");
+                    }
+                    try {
+                        String errorBody = response.body().string();
+                        if (!errorBody.isEmpty()) {
+                            Log.e(TAG, "API Error Body: " + errorBody);
+                            errorMessage += " Error details: " + errorBody;
+                        }
+                    } catch (Exception e) {
+                        Log.w(TAG, "Could not read error body", e);
+                    }
+                    Log.e(TAG, "Transcription failed: " + errorMessage);
+                    callback.onError(errorMessage);
                 }
             }
         });
@@ -219,6 +249,81 @@ public class OpenAIService {
         }
     }
     
+    // Validate API key by making a simple API call
+    public void validateApiKey(ApiKeyValidationCallback callback) {
+        Log.d(TAG, "Starting API key validation");
+        try {
+            JSONObject requestJson = new JSONObject();
+            requestJson.put("model", "gpt-4o-mini");
+            
+            JSONArray messages = new JSONArray();
+            JSONObject userMessage = new JSONObject();
+            userMessage.put("role", "user");
+            userMessage.put("content", "Test");
+            messages.put(userMessage);
+            
+            requestJson.put("messages", messages);
+            requestJson.put("max_tokens", 1);
+            
+            RequestBody body = RequestBody.create(requestJson.toString(), JSON);
+            
+            Request request = new Request.Builder()
+                .url(CHAT_API_URL)
+                .header("Authorization", "Bearer " + apiKey)
+                .header("Content-Type", "application/json")
+                .post(body)
+                .build();
+                
+            Log.d(TAG, "Sending API key validation request to OpenAI");
+            
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    Log.e(TAG, "API key validation request failed: " + e.getMessage(), e);
+                    callback.onValidationResult(false, "Network error: " + e.getMessage());
+                }
+                
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    Log.d(TAG, "API key validation response received with code: " + response.code());
+                    
+                    if (response.isSuccessful()) {
+                        Log.d(TAG, "API key validation successful");
+                        callback.onValidationResult(true, "API key is valid");
+                    } else {
+                        String errorMessage;
+                        if (response.code() == 401) {
+                            errorMessage = "Invalid API key";
+                            Log.e(TAG, "API key validation failed - 401 Unauthorized");
+                        } else if (response.code() == 429) {
+                            errorMessage = "API key is valid but rate limited";
+                            Log.w(TAG, "API key validation rate limited but key is valid");
+                            callback.onValidationResult(true, errorMessage);
+                            return;
+                        } else {
+                            errorMessage = "API error (code: " + response.code() + ")";
+                            Log.e(TAG, "API key validation failed with code: " + response.code());
+                        }
+                        
+                        try {
+                            String errorBody = response.body().string();
+                            if (!errorBody.isEmpty()) {
+                                Log.e(TAG, "API key validation error body: " + errorBody);
+                            }
+                        } catch (Exception e) {
+                            Log.w(TAG, "Could not read validation error body", e);
+                        }
+                        
+                        callback.onValidationResult(false, errorMessage);
+                    }
+                }
+            });
+            
+        } catch (JSONException e) {
+            callback.onValidationResult(false, "Failed to create validation request: " + e.getMessage());
+        }
+    }
+    
     // Callback interfaces
     public interface TranscriptionCallback {
         void onSuccess(String transcript, JSONArray segments);
@@ -233,5 +338,9 @@ public class OpenAIService {
     public interface TitleCallback {
         void onSuccess(String title);
         void onError(String error);
+    }
+    
+    public interface ApiKeyValidationCallback {
+        void onValidationResult(boolean isValid, String message);
     }
 }

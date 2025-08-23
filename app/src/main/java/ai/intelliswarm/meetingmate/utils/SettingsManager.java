@@ -2,12 +2,14 @@ package ai.intelliswarm.meetingmate.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKey;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 public class SettingsManager {
+    private static final String TAG = "SettingsManager";
     private static final String PREFS_NAME = "meeting_mate_secure_prefs";
     private static final String KEY_OPENAI_API = "openai_api_key";
     private static final String KEY_DEFAULT_CALENDAR_ID = "default_calendar_id";
@@ -50,16 +52,24 @@ public class SettingsManager {
     
     // OpenAI API Key
     public void setOpenAIApiKey(String apiKey) {
+        Log.d(TAG, "Saving OpenAI API key: " + (apiKey != null && !apiKey.isEmpty() ? 
+            apiKey.substring(0, Math.min(8, apiKey.length())) + "..." : "EMPTY"));
         sharedPreferences.edit().putString(KEY_OPENAI_API, apiKey).apply();
+        Log.d(TAG, "OpenAI API key saved successfully");
     }
     
     public String getOpenAIApiKey() {
-        return sharedPreferences.getString(KEY_OPENAI_API, "");
+        String key = sharedPreferences.getString(KEY_OPENAI_API, "");
+        Log.d(TAG, "Retrieved OpenAI API key: " + (key != null && !key.isEmpty() ? 
+            key.substring(0, Math.min(8, key.length())) + "..." : "EMPTY"));
+        return key;
     }
     
     public boolean hasOpenAIApiKey() {
         String key = getOpenAIApiKey();
-        return key != null && !key.isEmpty();
+        boolean hasKey = key != null && !key.isEmpty();
+        Log.d(TAG, "hasOpenAIApiKey: " + hasKey);
+        return hasKey;
     }
     
     // Default Calendar ID
