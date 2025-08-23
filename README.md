@@ -146,6 +146,93 @@ API keys are stored securely using Android's EncryptedSharedPreferences. To upda
 ./gradlew assembleRelease
 ```
 
+### Creating Release APK for Google Play Store
+
+#### 1. Generate Signing Key
+
+First, create a keystore file to sign your release APK:
+
+```bash
+keytool -genkeypair -v -keystore my-release-key.jks \
+  -keyalg RSA -keysize 2048 -validity 10000 \
+  -alias my-key-alias
+```
+
+You'll be prompted to enter:
+- Keystore password (keep this secure!)
+- Key password
+- Your name and organization details
+
+Store the keystore file (`my-release-key.jks`) in a secure location outside your project directory.
+
+#### 2. Configure Gradle Signing
+
+Add the following to your `app/build.gradle.kts` file:
+
+```kotlin
+android {
+    signingConfigs {
+        create("release") {
+            storeFile = file("../my-release-key.jks")
+            storePassword = "YOUR_KEYSTORE_PASSWORD"
+            keyAlias = "my-key-alias"
+            keyPassword = "YOUR_KEY_PASSWORD"
+        }
+    }
+    
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
+        }
+    }
+}
+```
+
+**Security Note**: For production builds, use environment variables or a separate `keystore.properties` file instead of hardcoding passwords:
+
+Create `keystore.properties` in your project root:
+```properties
+storePassword=YOUR_KEYSTORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=my-key-alias
+storeFile=../my-release-key.jks
+```
+
+Then update your `build.gradle.kts`:
+```kotlin
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties()
+keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+
+android {
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
+        }
+    }
+}
+```
+
+#### 3. Build Signed Release APK
+
+```bash
+# Build signed release APK
+./gradlew assembleRelease
+
+# Build Android App Bundle (AAB) for Play Store
+./gradlew bundleRelease
+```
+
+The signed APK will be located at: `app/build/outputs/apk/release/app-release.apk`
+The AAB file will be located at: `app/build/outputs/bundle/release/app-release.aab`
+
+**Important**: Always use the AAB format for Google Play Store uploads as it provides better optimization and smaller download sizes.
+
 ### Key Dependencies
 
 - **Retrofit**: HTTP client for API calls

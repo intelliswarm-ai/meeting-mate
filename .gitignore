@@ -57,6 +57,8 @@ captures/
 # Keystore files
 *.jks
 *.keystore
+keystore.properties
+my-release-key.jks
 
 # External native build folder
 .externalNativeBuild
