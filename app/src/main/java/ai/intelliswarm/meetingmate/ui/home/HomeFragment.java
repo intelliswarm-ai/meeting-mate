@@ -322,7 +322,10 @@ public class HomeFragment extends Fragment {
         
         // Start live transcription if using Android Speech
         if (selectedProvider == TranscriptionProvider.ProviderType.ANDROID_SPEECH && androidSpeechProvider != null) {
+            Log.d(TAG, "🎤 RECORDING STARTED - Attempting to start live transcription...");
             startLiveTranscription();
+        } else {
+            Log.w(TAG, "⚠️ Live transcription NOT started - Provider: " + selectedProvider + ", AndroidSpeechProvider: " + (androidSpeechProvider != null ? "available" : "null"));
         }
         
         updateRecordingUI(true);
@@ -336,7 +339,13 @@ public class HomeFragment extends Fragment {
         
         // Stop live transcription if running
         if (androidSpeechProvider != null && androidSpeechProvider.isListening()) {
+            Log.d(TAG, "🛑 RECORDING STOPPED - Stopping live transcription...");
+            Log.d(TAG, "Current transcript before stopping: '" + liveTranscript + "'");
             androidSpeechProvider.stopLiveTranscription();
+        } else {
+            Log.w(TAG, "⚠️ Live transcription was not running when recording stopped");
+            Log.w(TAG, "AndroidSpeechProvider: " + (androidSpeechProvider != null ? "available" : "null"));
+            Log.w(TAG, "Is listening: " + (androidSpeechProvider != null ? androidSpeechProvider.isListening() : "N/A"));
         }
         
         isRecording = false;
@@ -398,8 +407,11 @@ public class HomeFragment extends Fragment {
 
         // Process with selected transcription provider
         if (savedAudioFile != null) {
-            Log.d(TAG, "Current live transcript length: " + liveTranscript.length());
-            Log.d(TAG, "Live transcript content: " + (liveTranscript.isEmpty() ? "EMPTY" : liveTranscript.substring(0, Math.min(100, liveTranscript.length()))));
+            Log.d(TAG, "📋 TRANSCRIPTION DEBUG:");
+            Log.d(TAG, "   Selected provider: " + settingsManager.getSelectedTranscriptionProvider());
+            Log.d(TAG, "   Live transcript length: " + liveTranscript.length());
+            Log.d(TAG, "   Live transcript content: " + (liveTranscript.isEmpty() ? "EMPTY" : "'" + liveTranscript.substring(0, Math.min(100, liveTranscript.length())) + "...'")); 
+            Log.d(TAG, "   AndroidSpeechProvider available: " + (androidSpeechProvider != null ? androidSpeechProvider.isAvailable() : "null"));
             processWithTranscription(meetingId, meetingTitle, savedAudioFile, selectedEvent);
         } else {
             Log.e(TAG, "Failed to save audio file - cannot process transcription");
@@ -1057,12 +1069,21 @@ public class HomeFragment extends Fragment {
     }
 
     private void startLiveTranscription() {
-        if (androidSpeechProvider == null || !androidSpeechProvider.isAvailable()) {
-            Log.w(TAG, "Android Speech Provider not available for live transcription");
+        if (androidSpeechProvider == null) {
+            Log.e(TAG, "❌ Android Speech Provider is null - not initialized properly");
+            Toast.makeText(getContext(), "Speech recognition not initialized", Toast.LENGTH_SHORT).show();
             return;
         }
         
-        Log.d(TAG, "Starting live transcription");
+        if (!androidSpeechProvider.isAvailable()) {
+            Log.w(TAG, "❌ Android Speech Provider not available for live transcription");
+            Log.w(TAG, "SpeechRecognizer.isRecognitionAvailable: " + 
+                android.speech.SpeechRecognizer.isRecognitionAvailable(requireContext()));
+            Toast.makeText(getContext(), "Speech recognition not available on this device. Install Google app or speech services.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        
+        Log.d(TAG, "✅ Starting live transcription - all checks passed");
         
         androidSpeechProvider.startLiveTranscription(new TranscriptionProvider.TranscriptionCallback() {
             @Override
@@ -1072,7 +1093,7 @@ public class HomeFragment extends Fragment {
                 
                 requireActivity().runOnUiThread(() -> {
                     // Update UI with final transcript
-                    binding.textRecordingStatus.setText("Transcription complete");
+                    binding.textRecordingStatus.setText("Transcription complete: " + transcript.length() + " chars");
                 });
             }
             
@@ -1085,20 +1106,27 @@ public class HomeFragment extends Fragment {
             public void onError(String error) {
                 Log.e(TAG, "Live transcription error: " + error);
                 requireActivity().runOnUiThread(() -> {
-                    binding.textRecordingStatus.setText("Recording in progress (no live transcription)");
+                    binding.textRecordingStatus.setText("Speech recognition error: " + error);
+                    Toast.makeText(getContext(), "Speech recognition error: " + error, Toast.LENGTH_SHORT).show();
                 });
                 // Don't clear liveTranscript here - it might have partial content
             }
             
             @Override
             public void onPartialResult(String partialTranscript) {
-                Log.d(TAG, "Partial transcript: " + partialTranscript);
+                Log.d(TAG, "📝 Partial transcript received: '" + partialTranscript + "' (length: " + partialTranscript.length() + ")");
+                
+                // IMPORTANT: Update liveTranscript with partial results
+                liveTranscript = partialTranscript;
+                
                 requireActivity().runOnUiThread(() -> {
                     // Show partial transcript in status
                     if (partialTranscript.length() > 50) {
                         binding.textRecordingStatus.setText("..." + partialTranscript.substring(partialTranscript.length() - 50));
+                    } else if (!partialTranscript.isEmpty()) {
+                        binding.textRecordingStatus.setText("📝 " + partialTranscript);
                     } else {
-                        binding.textRecordingStatus.setText(partialTranscript);
+                        binding.textRecordingStatus.setText("🎤 Listening...");
                     }
                 });
             }

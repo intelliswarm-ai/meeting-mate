@@ -31,7 +31,7 @@ public class LocalWhisperProvider implements TranscriptionProvider {
     
     @Override
     public String getConfigurationRequirement() {
-        return "Download Whisper model file (~142MB). No internet required after setup.";
+        return "⚠️ PLACEHOLDER IMPLEMENTATION - This provider is not fully functional yet. It requires integration with a native Whisper library (whisper.cpp). Use OpenAI Whisper for actual transcription.";
     }
     
     @Override
@@ -62,14 +62,8 @@ public class LocalWhisperProvider implements TranscriptionProvider {
                 
                 if (isCancelled) return;
                 
-                // For now, return a placeholder transcript
-                // In a real implementation, this would call the native Whisper library
-                String transcript = "[LOCAL WHISPER] This is a placeholder transcript. " +
-                    "The actual implementation would use a native Whisper library like " +
-                    "whisper.cpp to process the audio file locally.";
-                
-                callback.onProgress(100);
-                callback.onSuccess(transcript, "");
+                // Return an error instead of placeholder transcript to be honest
+                callback.onError("⚠️ Local Whisper is not yet implemented. This is a placeholder provider that requires integration with whisper.cpp native library. Please use OpenAI Whisper for actual transcription.");
                 
             } catch (InterruptedException e) {
                 callback.onError("Transcription interrupted");
@@ -98,32 +92,13 @@ public class LocalWhisperProvider implements TranscriptionProvider {
      * Download Whisper model for offline use
      */
     public void downloadModel(ModelDownloadCallback callback) {
+        // Don't actually download anything - this is a placeholder
         executor.execute(() -> {
             try {
-                File modelsDir = new File(context.getFilesDir(), "whisper_models");
-                if (!modelsDir.exists()) {
-                    modelsDir.mkdirs();
-                }
-                
-                callback.onProgress(10, "Preparing download...");
                 Thread.sleep(1000);
-                
-                // Simulate download progress
-                for (int i = 20; i <= 90; i += 10) {
-                    if (isCancelled) return;
-                    callback.onProgress(i, "Downloading model... (" + i + "%)");
-                    Thread.sleep(500);
-                }
-                
-                // Create placeholder model file
-                File modelFile = new File(modelsDir, "ggml-base.en.bin");
-                modelFile.createNewFile();
-                
-                callback.onProgress(100, "Download complete!");
-                callback.onSuccess("Whisper model downloaded successfully");
-                
+                callback.onError("⚠️ Local Whisper model download is not implemented. This feature requires integration with whisper.cpp native library and actual model files. Please use OpenAI Whisper for transcription.");
             } catch (Exception e) {
-                callback.onError("Download failed: " + e.getMessage());
+                callback.onError("Operation failed: " + e.getMessage());
             }
         });
     }
