@@ -111,7 +111,7 @@ public class CalendarService {
     
     // Get today's calendar events
     public List<EventInfo> getTodayEvents() {
-        List<EventInfo> events = new ArrayList<>();
+        Log.d(TAG, "Getting today's calendar events");
         
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -124,12 +124,18 @@ public class CalendarService {
         calendar.set(Calendar.SECOND, 59);
         long endOfDay = calendar.getTimeInMillis();
         
-        return getEventsInRange(startOfDay, endOfDay);
+        Log.d(TAG, "Searching for events between " + new Date(startOfDay) + " and " + new Date(endOfDay));
+        
+        List<EventInfo> events = getEventsInRange(startOfDay, endOfDay);
+        Log.d(TAG, "getTodayEvents returning " + events.size() + " events");
+        
+        return events;
     }
     
     // Get events in a specific time range
     public List<EventInfo> getEventsInRange(long startTime, long endTime) {
         List<EventInfo> events = new ArrayList<>();
+        Log.d(TAG, "getEventsInRange called for range: " + startTime + " to " + endTime);
         
         String[] projection = new String[] {
             CalendarContract.Events._ID,
@@ -148,6 +154,9 @@ public class CalendarService {
             String.valueOf(endTime)
         };
         
+        Log.d(TAG, "Querying calendar with selection: " + selection);
+        Log.d(TAG, "Selection args: " + selectionArgs[0] + ", " + selectionArgs[1]);
+        
         try (Cursor cursor = contentResolver.query(
             CalendarContract.Events.CONTENT_URI,
             projection,
@@ -155,7 +164,10 @@ public class CalendarService {
             selectionArgs,
             CalendarContract.Events.DTSTART + " ASC")) {
             
+            Log.d(TAG, "Calendar query executed, cursor: " + (cursor != null ? "not null" : "null"));
+            
             if (cursor != null) {
+                Log.d(TAG, "Cursor has " + cursor.getCount() + " rows");
                 while (cursor.moveToNext()) {
                     EventInfo info = new EventInfo();
                     info.id = cursor.getLong(0);
@@ -166,12 +178,16 @@ public class CalendarService {
                     info.location = cursor.getString(5);
                     info.calendarId = cursor.getLong(6);
                     events.add(info);
+                    Log.d(TAG, "Found event: " + info.title + " at " + info.startTime);
                 }
             }
         } catch (SecurityException e) {
             Log.e(TAG, "Calendar permission not granted", e);
+        } catch (Exception e) {
+            Log.e(TAG, "Error querying calendar events", e);
         }
         
+        Log.d(TAG, "Returning " + events.size() + " events from getEventsInRange");
         return events;
     }
     
@@ -267,5 +283,17 @@ public class CalendarService {
         public Date endTime;
         public String location;
         public long calendarId;
+        
+        @Override
+        public String toString() {
+            if (title != null && !title.isEmpty()) {
+                if (startTime != null) {
+                    java.text.SimpleDateFormat timeFormat = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault());
+                    return timeFormat.format(startTime) + " - " + title;
+                }
+                return title;
+            }
+            return "Unnamed Event";
+        }
     }
 }

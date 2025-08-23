@@ -28,6 +28,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionDeniedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 
@@ -144,7 +145,7 @@ public class HomeFragment extends Fragment {
         // Calendar checkbox
         binding.checkboxLinkCalendar.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
-                loadCalendarEvents();
+                // Calendar events are loaded after permissions are granted
                 binding.spinnerCalendarEvents.setVisibility(View.VISIBLE);
             } else {
                 binding.spinnerCalendarEvents.setVisibility(View.GONE);
@@ -184,10 +185,9 @@ public class HomeFragment extends Fragment {
         permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
         
-        if (binding.checkboxLinkCalendar.isChecked()) {
-            permissions.add(Manifest.permission.READ_CALENDAR);
-            permissions.add(Manifest.permission.WRITE_CALENDAR);
-        }
+        // Always request calendar permissions to show calendar events
+        permissions.add(Manifest.permission.READ_CALENDAR);
+        permissions.add(Manifest.permission.WRITE_CALENDAR);
 
         Dexter.withContext(getContext())
             .withPermissions(permissions)
@@ -195,11 +195,17 @@ public class HomeFragment extends Fragment {
                 @Override
                 public void onPermissionsChecked(MultiplePermissionsReport report) {
                     if (report.areAllPermissionsGranted()) {
-                        // All permissions granted
+                        Log.d(TAG, "All permissions granted, loading calendar events");
+                        loadCalendarEvents();
                     } else {
                         Toast.makeText(getContext(), 
                             "Please grant all permissions to use the app", 
                             Toast.LENGTH_LONG).show();
+                        
+                        // Check which permissions were denied
+                        for (PermissionDeniedResponse deniedResponse : report.getDeniedPermissionResponses()) {
+                            Log.w(TAG, "Permission denied: " + deniedResponse.getPermissionName());
+                        }
                     }
                 }
 
@@ -363,6 +369,9 @@ public class HomeFragment extends Fragment {
                                 Toast.makeText(getContext(), 
                                     "Meeting processed successfully!", 
                                     Toast.LENGTH_LONG).show();
+                                    
+                                // Show transcript in dialog
+                                showTranscriptDialog(meetingTitle, transcript, summary);
                             });
                         }
                         
@@ -389,9 +398,16 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadCalendarEvents() {
+        Log.d(TAG, "Loading calendar events...");
         todayEvents = calendarService.getTodayEvents();
         
+        Log.d(TAG, "Found " + todayEvents.size() + " calendar events for today");
+        for (CalendarService.EventInfo event : todayEvents) {
+            Log.d(TAG, "Event: " + event.title + " at " + event.startTime);
+        }
+        
         if (todayEvents.isEmpty()) {
+            Log.d(TAG, "No calendar events found, adding manual event option");
             todayEvents.add(createManualEvent());
         }
         
@@ -402,6 +418,53 @@ public class HomeFragment extends Fragment {
         );
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.spinnerCalendarEvents.setAdapter(adapter);
+        
+        Log.d(TAG, "Calendar events loaded into spinner");
+    }
+    
+    private void showTranscriptDialog(String meetingTitle, String transcript, String summary) {
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(requireContext());
+        builder.setTitle("Meeting: " + meetingTitle);
+        
+        // Create scrollable text view
+        android.widget.ScrollView scrollView = new android.widget.ScrollView(requireContext());
+        android.widget.TextView textView = new android.widget.TextView(requireContext());
+        textView.setPadding(50, 50, 50, 50);
+        textView.setTextSize(14);
+        
+        // Build content string
+        StringBuilder contentBuilder = new StringBuilder();
+        contentBuilder.append("📝 TRANSCRIPT:\n\n").append(transcript);
+        if (summary != null && !summary.isEmpty()) {
+            contentBuilder.append("\n\n📊 SUMMARY:\n\n").append(summary);
+        }
+        final String content = contentBuilder.toString();
+        textView.setText(content);
+        
+        scrollView.addView(textView);
+        builder.setView(scrollView);
+        
+        builder.setPositiveButton("Close", (dialog, which) -> dialog.dismiss());
+        builder.setNegativeButton("Share", (dialog, which) -> {
+            // Share functionality
+            android.content.Intent shareIntent = new android.content.Intent(android.content.Intent.ACTION_SEND);
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(android.content.Intent.EXTRA_TEXT, content);
+            shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Meeting: " + meetingTitle);
+            startActivity(android.content.Intent.createChooser(shareIntent, "Share transcript"));
+        });
+        
+        android.app.AlertDialog dialog = builder.create();
+        dialog.show();
+        
+        // Make dialog larger
+        if (dialog.getWindow() != null) {
+            android.view.WindowManager.LayoutParams lp = new android.view.WindowManager.LayoutParams();
+            lp.copyFrom(dialog.getWindow().getAttributes());
+            lp.width = android.view.WindowManager.LayoutParams.MATCH_PARENT;
+            lp.height = (int)(getResources().getDisplayMetrics().heightPixels * 0.8);
+            dialog.getWindow().setAttributes(lp);
+        }
     }
 
     private CalendarService.EventInfo createManualEvent() {
