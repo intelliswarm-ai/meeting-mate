@@ -41,11 +41,11 @@ public class MainActivity extends AppCompatActivity {
             binding = ActivityMainBinding.inflate(getLayoutInflater());
             setContentView(binding.getRoot());
 
-            // Set up the toolbar as the action bar
-            MaterialToolbar toolbar = findViewById(R.id.toolbar);
-            setSupportActionBar(toolbar);
+            // Remove toolbar setup - using theme's action bar instead
+            // MaterialToolbar toolbar = findViewById(R.id.toolbar);
+            // setSupportActionBar(toolbar);
             
-            AppLogger.d(TAG, "Toolbar set as ActionBar");
+            AppLogger.d(TAG, "Using theme's default ActionBar");
 
             BottomNavigationView navView = findViewById(R.id.nav_view);
             AppLogger.d(TAG, "Found BottomNavigationView: " + (navView != null));
@@ -66,36 +66,48 @@ public class MainActivity extends AppCompatActivity {
                 AppLogger.d(TAG, "Navigation changed to: " + destination.getLabel());
             });
             
-            NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-            AppLogger.d(TAG, "ActionBar navigation setup completed");
+            // Skip ActionBar setup since we're using NoActionBar theme
+            AppLogger.d(TAG, "Skipping ActionBar setup for NoActionBar theme");
             
             NavigationUI.setupWithNavController(binding.navView, navController);
             AppLogger.d(TAG, "BottomNavigation setup completed");
             
-            // Add click listener to bottom navigation for debugging
+            // Add comprehensive navigation debugging
             navView.setOnItemSelectedListener(item -> {
-                AppLogger.d(TAG, "Bottom nav item selected: " + item.getTitle() + " (ID: " + item.getItemId() + ")");
+                AppLogger.d(TAG, "=== NAVIGATION CLICK DEBUG ===");
+                AppLogger.d(TAG, "Item clicked: " + item.getTitle());
+                AppLogger.d(TAG, "Item ID: " + item.getItemId());
+                AppLogger.d(TAG, "Home ID: " + R.id.navigation_home);
+                AppLogger.d(TAG, "Dashboard ID: " + R.id.navigation_dashboard);
+                AppLogger.d(TAG, "Notifications ID: " + R.id.navigation_notifications);
                 
-                // Visual feedback - show toast when tab is pressed
-                Toast.makeText(this, "Switching to: " + item.getTitle(), Toast.LENGTH_SHORT).show();
+                // Log current state
+                AppLogger.d(TAG, "Current destination before: " + navController.getCurrentDestination().getId());
+                AppLogger.d(TAG, "Current label: " + navController.getCurrentDestination().getLabel());
                 
-                // Try manual navigation as backup
+                // Try to navigate
+                boolean handled = false;
                 try {
-                    boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
-                    AppLogger.d(TAG, "Navigation handled: " + handled);
+                    handled = NavigationUI.onNavDestinationSelected(item, navController);
+                    AppLogger.d(TAG, "NavigationUI.onNavDestinationSelected returned: " + handled);
                     
                     if (!handled) {
-                        // Manual navigation fallback
-                        AppLogger.w(TAG, "Navigation failed, trying manual navigation");
+                        AppLogger.w(TAG, "NavigationUI couldn't handle navigation, trying direct navigate");
                         navController.navigate(item.getItemId());
+                        handled = true;
+                        AppLogger.d(TAG, "Direct navigation attempted");
                     }
-                    
-                    return true;
                 } catch (Exception e) {
-                    AppLogger.e(TAG, "Navigation error", e);
-                    Toast.makeText(this, "Navigation error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    return false;
+                    AppLogger.e(TAG, "Navigation exception: " + e.getMessage(), e);
+                    e.printStackTrace();
                 }
+                
+                // Log after navigation attempt
+                AppLogger.d(TAG, "Current destination after: " + navController.getCurrentDestination().getId());
+                AppLogger.d(TAG, "Navigation handled: " + handled);
+                AppLogger.d(TAG, "=== END NAVIGATION DEBUG ===");
+                
+                return handled;
             });
             
             AppLogger.d(TAG, "Navigation setup completed successfully");

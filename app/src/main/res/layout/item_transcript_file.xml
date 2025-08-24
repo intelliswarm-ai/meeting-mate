@@ -50,7 +50,7 @@
             android:layout_height="wrap_content"
             android:text="Modified: Jan 15, 2024 14:30"
             android:textSize="12sp"
-            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textColor="@color/md_theme_onSurfaceVariant"
             android:layout_marginBottom="2dp" />
 
         <TextView
@@ -59,7 +59,7 @@
             android:layout_height="wrap_content"
             android:text="2.5 KB"
             android:textSize="12sp"
-            android:textColor="?attr/colorOnSurfaceVariant" />
+            android:textColor="@color/md_theme_onSurfaceVariant" />
 
     </LinearLayout>
 

@@ -14,7 +14,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "ai.intelliswarm.meetingmate"
-    compileSdk = 34
+    compileSdk = 35
 
     // Signing configurations
     signingConfigs {
@@ -31,7 +31,7 @@ android {
     defaultConfig {
         applicationId = "ai.intelliswarm.meetingmate"
         minSdk = 26
-        targetSdk = 33
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
 
@@ -66,8 +66,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     buildFeatures {
         viewBinding = true
@@ -110,11 +110,12 @@ dependencies {
     // Security for encrypted preferences
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
     
-    // Export functionality - PDF and DOCX
+    // Export functionality - PDF only (DOCX temporarily disabled for Android 15 compatibility)
     implementation("com.itextpdf:itextg:5.5.10")
-    implementation("org.apache.poi:poi:5.2.4")
-    implementation("org.apache.poi:poi-ooxml:5.2.4")
-    implementation("org.apache.poi:poi-scratchpad:5.2.4")
+    // Apache POI causes issues on Android 15 - commented out temporarily
+    // implementation("org.apache.poi:poi:5.2.4")
+    // implementation("org.apache.poi:poi-ooxml:5.2.4")
+    // implementation("org.apache.poi:poi-scratchpad:5.2.4")
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

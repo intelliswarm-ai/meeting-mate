@@ -31,6 +31,37 @@ public class DashboardFragment extends Fragment {
     
     private static final String TAG = "DashboardFragment";
     
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        AppLogger.d(TAG, "onCreate called");
+    }
+    
+    @Override
+    public void onStart() {
+        super.onStart();
+        AppLogger.d(TAG, "onStart called");
+    }
+    
+    @Override
+    public void onResume() {
+        super.onResume();
+        AppLogger.d(TAG, "onResume called - Fragment is now visible");
+    }
+    
+    @Override
+    public void onPause() {
+        super.onPause();
+        AppLogger.d(TAG, "onPause called");
+    }
+    
+    @Override
+    public void onStop() {
+        super.onStop();
+        AppLogger.d(TAG, "onStop called");
+    }
+    
+    
     private FragmentDashboardBinding binding;
     private MaterialTextView selectedDateText;
     private MaterialButton refreshButton;
@@ -44,10 +75,16 @@ public class DashboardFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         try {
-            AppLogger.lifecycle("DashboardFragment", "onCreateView");
+            AppLogger.lifecycle("DashboardFragment", "onCreateView - STARTED");
+            AppLogger.d(TAG, "=== DASHBOARD FRAGMENT CREATION ===");
+            AppLogger.d(TAG, "Container: " + (container != null ? container.getClass().getName() : "null"));
+            AppLogger.d(TAG, "SavedInstanceState: " + (savedInstanceState != null));
             
             binding = FragmentDashboardBinding.inflate(inflater, container, false);
             View root = binding.getRoot();
+            
+            AppLogger.d(TAG, "View inflated successfully");
+            AppLogger.d(TAG, "Root view class: " + root.getClass().getName());
             AppLogger.d(TAG, "Fragment view inflated successfully");
             
             // Initialize services and date handling

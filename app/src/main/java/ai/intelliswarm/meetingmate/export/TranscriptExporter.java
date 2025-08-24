@@ -6,7 +6,8 @@ import android.net.Uri;
 import androidx.core.content.FileProvider;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfWriter;
-import org.apache.poi.xwpf.usermodel.*;
+// Apache POI disabled for Android 15 compatibility
+// import org.apache.poi.xwpf.usermodel.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -99,64 +100,24 @@ public class TranscriptExporter {
     
     /**
      * Export to DOCX format (Word document)
+     * TEMPORARILY DISABLED: Apache POI causes issues on Android 15
      */
     public File exportToDOCX(String transcript, String meetingTitle, TranscriptSegments segments) throws Exception {
+        // Temporarily export as TXT instead of DOCX due to Android 15 compatibility
+        // TODO: Find alternative DOCX library compatible with Android 15
+        return exportToTXT(transcript, meetingTitle);
+        
+        /* Original DOCX export code - disabled for Android 15 compatibility
         File exportDir = getExportDirectory();
         String fileName = sanitizeFileName(meetingTitle) + "_" + getTimestamp() + ".docx";
         File file = new File(exportDir, fileName);
         
         XWPFDocument document = new XWPFDocument();
         
-        // Add title
-        XWPFParagraph titlePara = document.createParagraph();
-        titlePara.setAlignment(ParagraphAlignment.CENTER);
-        XWPFRun titleRun = titlePara.createRun();
-        titleRun.setText(meetingTitle);
-        titleRun.setBold(true);
-        titleRun.setFontSize(18);
-        
-        // Add date
-        XWPFParagraph datePara = document.createParagraph();
-        datePara.setAlignment(ParagraphAlignment.CENTER);
-        XWPFRun dateRun = datePara.createRun();
-        dateRun.setText("Date: " + new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(new Date()));
-        dateRun.setFontSize(10);
-        dateRun.setColor("808080");
-        
-        // Add blank line
-        document.createParagraph();
-        
-        // Add transcript with formatting
-        if (segments != null && segments.hasSegments()) {
-            for (TranscriptSegments.Segment segment : segments.getSegments()) {
-                // Speaker paragraph
-                XWPFParagraph speakerPara = document.createParagraph();
-                XWPFRun speakerRun = speakerPara.createRun();
-                speakerRun.setText(segment.getSpeakerLabel() + ":");
-                speakerRun.setBold(true);
-                speakerRun.setFontSize(12);
-                
-                // Text paragraph
-                XWPFParagraph textPara = document.createParagraph();
-                textPara.setIndentationLeft(400);
-                XWPFRun textRun = textPara.createRun();
-                textRun.setText(segment.getText());
-                textRun.setFontSize(11);
-            }
-        } else {
-            // Plain transcript
-            XWPFParagraph para = document.createParagraph();
-            XWPFRun run = para.createRun();
-            run.setText(transcript);
-            run.setFontSize(11);
-        }
-        
-        try (FileOutputStream out = new FileOutputStream(file)) {
-            document.write(out);
-        }
-        document.close();
+        // ... rest of DOCX generation code ...
         
         return file;
+        */
     }
     
     /**

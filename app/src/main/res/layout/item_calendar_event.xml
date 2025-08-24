@@ -42,7 +42,7 @@
             android:layout_height="wrap_content"
             android:text="📍 Conference Room A"
             android:textSize="14sp"
-            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textColor="@color/md_theme_onSurfaceVariant"
             android:layout_marginBottom="4dp"
             android:visibility="gone" />
 
@@ -52,7 +52,7 @@
             android:layout_height="wrap_content"
             android:text="Event description"
             android:textSize="12sp"
-            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textColor="@color/md_theme_onSurfaceVariant"
             android:maxLines="2"
             android:ellipsize="end"
             android:visibility="gone" />

@@ -37,7 +37,7 @@
                 android:layout_height="wrap_content"
                 android:text="Loading log files..."
                 android:textSize="14sp"
-                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textColor="@color/md_theme_onSurfaceVariant"
                 android:layout_marginBottom="16dp" />
 
             <LinearLayout
@@ -117,7 +117,7 @@
                         android:layout_height="wrap_content"
                         android:text="• App Debug Log: General app logging and events\n• Session Log: Records for each app session\n• Crash Report: Detailed crash information and stack traces\n\nTap any log file to view or share it. Use Export to share all logs for debugging."
                         android:textSize="12sp"
-                        android:textColor="?attr/colorOnSurfaceVariant" />
+                        android:textColor="@color/md_theme_onSurfaceVariant" />
 
                 </LinearLayout>
 
