@@ -7,6 +7,7 @@ public interface TranscriptionProvider {
     enum ProviderType {
         ANDROID_SPEECH("Android Speech Recognition (Default)", false),
         OPENAI_WHISPER("OpenAI Whisper", true),
+        ASSEMBLYAI_SPEAKER("AssemblyAI (Real Speaker Detection)", true),
         LOCAL_WHISPER("Local Whisper (⚠️ Not Implemented)", false),
         GOOGLE_SPEECH("Google Speech-to-Text (⚠️ Not Implemented)", true),
         AZURE_SPEECH("Azure Speech Services (⚠️ Not Implemented)", true);
