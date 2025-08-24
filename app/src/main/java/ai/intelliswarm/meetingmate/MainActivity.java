@@ -22,6 +22,8 @@ import androidx.navigation.ui.NavigationUI;
 import ai.intelliswarm.meetingmate.databinding.ActivityMainBinding;
 import ai.intelliswarm.meetingmate.analytics.CrashAnalytics;
 import ai.intelliswarm.meetingmate.analytics.AppLogger;
+import ai.intelliswarm.meetingmate.utils.SettingsManager;
+import android.content.Context;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +32,11 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private ActivityMainBinding binding;
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(SettingsManager.applyLanguage(newBase));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

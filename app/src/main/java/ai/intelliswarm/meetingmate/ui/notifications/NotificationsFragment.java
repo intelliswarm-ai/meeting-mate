@@ -91,8 +91,11 @@ public class NotificationsFragment extends Fragment {
         // Setup audio quality spinner
         setupAudioQualitySpinner();
         
-        // Setup language spinner
-        setupLanguageSpinner();
+        // Setup app language spinner
+        setupAppLanguageSpinner();
+        
+        // Setup transcription language spinner
+        setupTranscriptionLanguageSpinner();
     }
     
     
@@ -130,7 +133,47 @@ public class NotificationsFragment extends Fragment {
         );
     }
     
-    private void setupLanguageSpinner() {
+    private void setupAppLanguageSpinner() {
+        // UI languages - only those we have translations for
+        String[] languages = {
+            "System Default", "English", "Spanish", "French", "German", "Italian", "Portuguese", 
+            "Russian", "Polish", "Dutch", "Greek", "Swedish", "Danish", "Czech"
+        };
+        String[] codes = {
+            "system", "en", "es", "fr", "de", "it", "pt", "ru", "pl", "nl", "el", "sv", "da", "cs"
+        };
+        
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+            requireContext(), 
+            android.R.layout.simple_spinner_item, 
+            languages
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.spinnerAppLanguage.setAdapter(adapter);
+        
+        binding.spinnerAppLanguage.setOnItemSelectedListener(
+            new android.widget.AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                    if (position < codes.length) {
+                        String selectedLanguage = codes[position];
+                        String currentLanguage = settingsManager.getAppLanguage();
+                        
+                        // Only change if different from current language
+                        if (!selectedLanguage.equals(currentLanguage)) {
+                            // Apply language change immediately (this will save and restart)
+                            SettingsManager.applyLanguageToActivity(requireActivity(), selectedLanguage);
+                        }
+                    }
+                }
+                
+                @Override
+                public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+            }
+        );
+    }
+    
+    private void setupTranscriptionLanguageSpinner() {
         // European languages supported by OpenAI Whisper
         String[] languages = {
             "Auto-detect", "English", "Spanish", "French", "German", "Italian", "Portuguese", 
@@ -166,6 +209,7 @@ public class NotificationsFragment extends Fragment {
         );
     }
     
+    
     private void loadSettings() {
         // Load current API key (show only first few characters for security)
         String apiKey = settingsManager.getOpenAIApiKey();
@@ -189,14 +233,24 @@ public class NotificationsFragment extends Fragment {
             }
         }
         
-        // Load language
-        String currentLanguage = settingsManager.getTranscriptLanguage();
-        String[] codes = {
+        // Load app language
+        String currentAppLanguage = settingsManager.getAppLanguage();
+        String[] appCodes = {"system", "en", "es", "fr", "de", "it", "pt", "ru", "pl", "nl", "el", "sv", "da", "cs"};
+        for (int i = 0; i < appCodes.length; i++) {
+            if (appCodes[i].equals(currentAppLanguage)) {
+                binding.spinnerAppLanguage.setSelection(i);
+                break;
+            }
+        }
+        
+        // Load transcription language
+        String currentTranscriptLanguage = settingsManager.getTranscriptLanguage();
+        String[] transcriptCodes = {
             "auto", "en", "es", "fr", "de", "it", "pt", "ru", "pl", "nl", "sv", "da", "no", 
             "fi", "hu", "cs", "sk", "ro", "bg", "hr", "sl", "et", "lv", "lt", "mt", "el", "tr", "uk"
         };
-        for (int i = 0; i < codes.length; i++) {
-            if (codes[i].equals(currentLanguage)) {
+        for (int i = 0; i < transcriptCodes.length; i++) {
+            if (transcriptCodes[i].equals(currentTranscriptLanguage)) {
                 binding.spinnerLanguage.setSelection(i);
                 break;
             }

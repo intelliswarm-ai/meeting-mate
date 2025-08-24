@@ -2,6 +2,9 @@ package ai.intelliswarm.meetingmate.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import java.util.Locale;
 import android.util.Log;
 import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKey;
@@ -17,6 +20,7 @@ public class SettingsManager {
     private static final String KEY_AUTO_SUMMARIZE = "auto_summarize";
     private static final String KEY_AUDIO_QUALITY = "audio_quality";
     private static final String KEY_TRANSCRIPT_LANGUAGE = "transcript_language";
+    private static final String KEY_APP_LANGUAGE = "app_language";
     private static final String KEY_TRANSCRIPTION_PROVIDER = "transcription_provider";
     
     private SharedPreferences sharedPreferences;
@@ -120,6 +124,72 @@ public class SettingsManager {
     
     public String getTranscriptLanguage() {
         return sharedPreferences.getString(KEY_TRANSCRIPT_LANGUAGE, "auto");
+    }
+    
+    // App UI Language Setting
+    public void setAppLanguage(String languageCode) {
+        sharedPreferences.edit().putString(KEY_APP_LANGUAGE, languageCode).apply();
+    }
+    
+    public String getAppLanguage() {
+        return sharedPreferences.getString(KEY_APP_LANGUAGE, "system");
+    }
+    
+    // Apply language to app context
+    public static Context applyLanguage(Context context) {
+        try {
+            SettingsManager settingsManager = getInstance(context);
+            String languageCode = settingsManager.getAppLanguage();
+            
+            Log.d(TAG, "applyLanguage called with language: " + languageCode);
+            
+            if ("system".equals(languageCode) || languageCode == null || languageCode.isEmpty()) {
+                Log.d(TAG, "Using system default language");
+                return context;
+            }
+            
+            Locale locale = new Locale(languageCode);
+            Locale.setDefault(locale);
+            
+            Configuration config = new Configuration(context.getResources().getConfiguration());
+            config.setLocale(locale);
+            
+            Context newContext = context.createConfigurationContext(config);
+            Log.d(TAG, "Language applied successfully: " + languageCode);
+            return newContext;
+            
+        } catch (Exception e) {
+            // If called from attachBaseContext and context isn't ready, return original context
+            Log.d(TAG, "Unable to apply language in attachBaseContext, using original context: " + e.getMessage());
+            return context;
+        }
+    }
+    
+    // Apply language change immediately to activity
+    public static void applyLanguageToActivity(android.app.Activity activity, String languageCode) {
+        Log.d(TAG, "applyLanguageToActivity called with language: " + languageCode);
+        
+        // Save the language first
+        SettingsManager settingsManager = getInstance(activity);
+        settingsManager.setAppLanguage(languageCode);
+        
+        // Apply the locale change immediately
+        if (!"system".equals(languageCode)) {
+            Locale locale = new Locale(languageCode);
+            Locale.setDefault(locale);
+            
+            Configuration config = new Configuration(activity.getResources().getConfiguration());
+            config.setLocale(locale);
+            
+            activity.getResources().updateConfiguration(config, activity.getResources().getDisplayMetrics());
+            Log.d(TAG, "Configuration updated for language: " + languageCode);
+        } else {
+            Log.d(TAG, "Reverting to system language");
+        }
+        
+        // Recreate the activity to refresh all UI
+        Log.d(TAG, "Recreating activity to apply language changes");
+        activity.recreate();
     }
     
     // Transcription Provider Setting

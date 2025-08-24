@@ -27,6 +27,7 @@ import ai.intelliswarm.meetingmate.service.AudioRecordingService;
 import ai.intelliswarm.meetingmate.service.OpenAIService;
 import ai.intelliswarm.meetingmate.analytics.AppLogger;
 import ai.intelliswarm.meetingmate.utils.SettingsManager;
+import android.content.Context;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -68,6 +69,11 @@ public class TranscriptLinkActivity extends AppCompatActivity {
     private long eventEndTime;
     
     private SimpleDateFormat dateTimeFormat;
+    
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(SettingsManager.applyLanguage(newBase));
+    }
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {

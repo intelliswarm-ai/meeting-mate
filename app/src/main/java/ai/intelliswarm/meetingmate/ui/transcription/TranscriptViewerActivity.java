@@ -12,6 +12,8 @@ import ai.intelliswarm.meetingmate.R;
 import ai.intelliswarm.meetingmate.data.MeetingFileManager;
 import ai.intelliswarm.meetingmate.export.TranscriptExporter;
 import ai.intelliswarm.meetingmate.analytics.AppLogger;
+import ai.intelliswarm.meetingmate.utils.SettingsManager;
+import android.content.Context;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -32,6 +34,11 @@ public class TranscriptViewerActivity extends AppCompatActivity {
     private String transcriptContent;
     private Date meetingDate;
     private MeetingFileManager meetingFileManager;
+    
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(SettingsManager.applyLanguage(newBase));
+    }
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {

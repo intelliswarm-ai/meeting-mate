@@ -86,13 +86,15 @@
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white"
                 android:layout_marginBottom="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="16dp"
+                    android:background="@color/white">
 
                     <com.google.android.material.textview.MaterialTextView
                         android:layout_width="match_parent"
@@ -100,13 +102,14 @@
                         android:text="📝 Transcript"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="@color/black"
+                        android:textColor="@color/md_theme_onSurface"
                         android:layout_marginBottom="12dp" />
 
                     <ScrollView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:maxHeight="400dp">
+                        android:maxHeight="400dp"
+                        android:background="@color/md_theme_surface">
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/text_transcript_content"
@@ -114,9 +117,11 @@
                             android:layout_height="wrap_content"
                             android:text="Transcript content will appear here..."
                             android:textSize="16sp"
-                            android:textColor="@color/black"
+                            android:textColor="@color/md_theme_onSurface"
                             android:lineSpacingMultiplier="1.2"
-                            android:textIsSelectable="true" />
+                            android:textIsSelectable="true"
+                            android:padding="12dp"
+                            android:background="@color/md_theme_surface" />
 
                     </ScrollView>
 

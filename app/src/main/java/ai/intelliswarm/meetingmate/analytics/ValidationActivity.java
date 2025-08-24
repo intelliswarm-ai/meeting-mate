@@ -9,6 +9,8 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import ai.intelliswarm.meetingmate.R;
+import ai.intelliswarm.meetingmate.utils.SettingsManager;
+import android.content.Context;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,6 +26,11 @@ public class ValidationActivity extends Activity {
     private Button runValidationButton;
     private ExecutorService executor;
     private Handler mainHandler;
+    
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(SettingsManager.applyLanguage(newBase));
+    }
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
