@@ -50,6 +50,7 @@ import ai.intelliswarm.meetingmate.service.CalendarService;
 import ai.intelliswarm.meetingmate.service.OpenAIService;
 import ai.intelliswarm.meetingmate.utils.SettingsManager;
 import ai.intelliswarm.meetingmate.transcription.TranscriptionManager;
+import ai.intelliswarm.meetingmate.analytics.TranscriptionLogger;
 import ai.intelliswarm.meetingmate.transcription.TranscriptionProvider;
 import ai.intelliswarm.meetingmate.transcription.AndroidSpeechProvider;
 
@@ -96,14 +97,32 @@ public class HomeFragment extends Fragment {
     private BroadcastReceiver recordingStateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "📢 Broadcast received: " + intent.getAction());
             boolean isRecording = intent.getBooleanExtra("isRecording", false);
             Log.d(TAG, "Recording state changed: isRecording = " + isRecording);
             
             if (!isRecording) {
                 String filePath = intent.getStringExtra("filePath");
                 long duration = intent.getLongExtra("duration", 0);
-                Log.d(TAG, "Recording stopped - filePath: " + filePath + ", duration: " + duration);
-                processRecording(filePath, duration);
+                Log.d(TAG, "📁 Recording stopped - filePath: " + filePath + ", duration: " + duration);
+                
+                // Show recording completed popup
+                showStepPopup("✅ Recording Complete", 
+                    "Audio recording finished!\n" +
+                    "Duration: " + (duration / 1000) + " seconds\n" +
+                    "Starting file processing...", 
+                    false);
+                
+                if (filePath != null) {
+                    Log.d(TAG, "🔄 Calling processRecording()...");
+                    processRecording(filePath, duration);
+                } else {
+                    Log.e(TAG, "❌ filePath is null - cannot process recording");
+                    showStepPopup("❌ Processing Error", 
+                        "Audio file path is missing.\n" +
+                        "Recording may have failed.", 
+                        true);
+                }
             }
             
             updateRecordingUI(isRecording);
@@ -311,24 +330,54 @@ public class HomeFragment extends Fragment {
         TranscriptionProvider provider = transcriptionManager.getProvider(selectedProvider);
         
         if (provider != null && !provider.isConfigured()) {
-            Toast.makeText(getContext(), 
+            showStepPopup("❌ Configuration Required", 
                 "Please configure " + selectedProvider.getDisplayName() + " in settings first", 
-                Toast.LENGTH_LONG).show();
+                true);
             return;
         }
+        
+        // Show recording start popup
+        String meetingTitle = binding.editMeetingTitle.getText().toString();
+        if (meetingTitle.isEmpty()) {
+            meetingTitle = "Meeting " + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault()).format(new Date());
+        }
+        
+        showStepPopup("🎙️ Recording Started", 
+            "Meeting: " + meetingTitle + "\n" +
+            "Provider: " + selectedProvider.getDisplayName() + "\n" +
+            "Starting audio capture...", 
+            false);
         
         // Inform user about transcription approach
         if (selectedProvider == TranscriptionProvider.ProviderType.ANDROID_SPEECH) {
             if (androidSpeechProvider != null && androidSpeechProvider.isAvailable()) {
-                Toast.makeText(getContext(), "Starting live transcription...", Toast.LENGTH_SHORT).show();
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                    showStepPopup("🎤 Live Transcription", 
+                        "Android Speech Recognition is listening...\nSpeak clearly for real-time transcription.", 
+                        false);
+                }, 1500);
             } else {
                 // Inform about fallback
                 if (settingsManager.hasOpenAIApiKey()) {
-                    Toast.makeText(getContext(), "Android Speech not available. Will use OpenAI for transcription.", Toast.LENGTH_SHORT).show();
+                    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                        showStepPopup("🔄 Fallback Mode", 
+                            "Android Speech not available.\nWill use OpenAI Whisper for transcription after recording.", 
+                            false);
+                    }, 1500);
                 } else {
-                    Toast.makeText(getContext(), "For transcription, please configure OpenAI Whisper in Settings.", Toast.LENGTH_LONG).show();
+                    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                        showStepPopup("⚠️ Transcription Unavailable", 
+                            "For transcription, please configure OpenAI Whisper in Settings.", 
+                            true);
+                    }, 1500);
                 }
             }
+        } else {
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                showStepPopup("📋 File Transcription", 
+                    "Recording audio for file-based transcription\nTranscription will occur after recording stops", 
+                    false);
+            }, 1500);
         }
 
         Intent serviceIntent = new Intent(getContext(), AudioRecordingService.class);
@@ -361,8 +410,41 @@ public class HomeFragment extends Fragment {
     }
 
     private void stopRecording() {
+        Log.d(TAG, "🛑 Stop recording button pressed");
+        
+        // Show stopping popup
+        showStepPopup("🛑 Stopping Recording", 
+            "Finalizing audio recording...\n" +
+            "Processing will begin shortly.", 
+            false);
+        
         if (recordingService != null) {
+            Log.d(TAG, "Calling recordingService.stopRecording()");
             recordingService.stopRecording();
+            
+            // Backup mechanism - if broadcast doesn't come within 3 seconds, check directly
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                if (recordingService != null && !recordingService.isRecording()) {
+                    Log.w(TAG, "⚠️ Broadcast not received - checking service directly");
+                    String filePath = recordingService.getLastRecordingPath();
+                    long duration = recordingService.getLastRecordingDuration();
+                    Log.d(TAG, "Direct service check - filePath: " + filePath + ", duration: " + duration);
+                    
+                    if (filePath != null) {
+                        showStepPopup("🔄 Backup Processing", 
+                            "Processing recording via service backup...", 
+                            false);
+                        processRecording(filePath, duration);
+                    }
+                }
+            }, 3000);
+            
+        } else {
+            Log.e(TAG, "❌ recordingService is null - cannot stop recording");
+            showStepPopup("❌ Error", 
+                "Recording service not available.\n" +
+                "Try restarting the app.", 
+                true);
         }
         
         // Stop live transcription if running
@@ -403,27 +485,68 @@ public class HomeFragment extends Fragment {
     }
 
     private void processRecording(String audioFilePath, long duration) {
-        Log.d(TAG, "Processing recording - audioFilePath: " + audioFilePath + ", duration: " + duration);
+        Log.d(TAG, "🎯 processRecording() called with audioFilePath: " + audioFilePath + ", duration: " + duration);
         
-        if (audioFilePath == null || !new File(audioFilePath).exists()) {
-            Log.e(TAG, "Recording file not found or null: " + audioFilePath);
-            Toast.makeText(getContext(), "Recording failed - file not found", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         String meetingId = fileManager.generateMeetingId();
         String meetingTitle = binding.editMeetingTitle.getText().toString();
         if (meetingTitle.isEmpty()) {
             meetingTitle = "Meeting " + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault()).format(new Date());
         }
         
+        Log.d(TAG, "📝 Generated meetingId: " + meetingId + ", meetingTitle: " + meetingTitle);
+        
+        TranscriptionLogger.logRecordingStop(meetingId, audioFilePath, duration);
+        TranscriptionLogger.logApiKeyStatus(requireContext());
+        
+        Log.d(TAG, "Processing recording - audioFilePath: " + audioFilePath + ", duration: " + duration);
+        
+        if (audioFilePath == null || !new File(audioFilePath).exists()) {
+            TranscriptionLogger.logFlowFailed(meetingId, "Recording file not found or null: " + audioFilePath);
+            Toast.makeText(getContext(), "Recording failed - file not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
         Log.d(TAG, "Generated meeting - ID: " + meetingId + ", Title: " + meetingTitle);
 
-        // Save audio file
+        // Validate and save audio file
         File audioFile = new File(audioFilePath);
-        Log.d(TAG, "Original audio file size: " + audioFile.length() + " bytes");
+        long originalSize = audioFile.length();
+        Log.d(TAG, "Original audio file size: " + originalSize + " bytes");
+        
+        if (!TranscriptionLogger.validateAudioFile(audioFile)) {
+            TranscriptionLogger.logFlowFailed(meetingId, "Audio file validation failed");
+            Toast.makeText(getContext(), "Invalid audio file", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Show file saving popup
+        showStepPopup("💾 Saving Audio File", 
+            "Saving recording to storage...\n" +
+            "File size: " + (originalSize / 1024) + " KB", 
+            false);
         
         File savedAudioFile = fileManager.saveAudioFile(meetingId, audioFile);
+        if (savedAudioFile != null) {
+            TranscriptionLogger.logAudioFileSaved(meetingId, savedAudioFile, originalSize, savedAudioFile.length());
+            Log.d(TAG, "✅ Audio file saved successfully: " + savedAudioFile.getAbsolutePath() + " (" + savedAudioFile.length() + " bytes)");
+            
+            // Show success popup
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                showStepPopup("✅ File Saved Successfully", 
+                    "Audio file saved: " + savedAudioFile.getName() + "\n" +
+                    "Size: " + (savedAudioFile.length() / 1024) + " KB", 
+                    false);
+            }, 1000);
+        } else {
+            Log.e(TAG, "❌ FAILED to save audio file - MeetingFileManager.saveAudioFile() returned null");
+            TranscriptionLogger.logFlowFailed(meetingId, "MeetingFileManager.saveAudioFile() returned null");
+            
+            // Show error popup
+            showStepPopup("❌ File Save Failed", 
+                "Failed to save audio file to storage.\n" +
+                "Check storage permissions and available space.", 
+                true);
+        }
         Log.d(TAG, "Saved audio file: " + (savedAudioFile != null ? savedAudioFile.getAbsolutePath() : "null"));
 
         // Get selected calendar event if any
@@ -442,7 +565,7 @@ public class HomeFragment extends Fragment {
             Log.d(TAG, "   AndroidSpeechProvider available: " + (androidSpeechProvider != null ? androidSpeechProvider.isAvailable() : "null"));
             processWithTranscription(meetingId, meetingTitle, savedAudioFile, selectedEvent);
         } else {
-            Log.e(TAG, "Failed to save audio file - cannot process transcription");
+            TranscriptionLogger.logFlowFailed(meetingId, "Failed to save audio file");
             Toast.makeText(getContext(), "Failed to save recording", Toast.LENGTH_SHORT).show();
         }
 
@@ -457,8 +580,16 @@ public class HomeFragment extends Fragment {
     private void processWithTranscription(String meetingId, String meetingTitle, 
                                         File audioFile, CalendarService.EventInfo calendarEvent) {
         Log.d(TAG, "Starting transcription processing for meeting: " + meetingTitle);
+        TranscriptionLogger.logTranscriptionStart(meetingId, 
+            settingsManager.getSelectedTranscriptionProvider().toString(), audioFile);
         
         TranscriptionProvider.ProviderType selectedProvider = settingsManager.getSelectedTranscriptionProvider();
+        
+        // Show transcription start popup
+        showStepPopup("🔄 Starting Transcription", 
+            "Processing audio with " + selectedProvider.getDisplayName() + "\n" +
+            "File: " + audioFile.getName() + " (" + (audioFile.length() / 1024) + " KB)", 
+            false);
         
         // For Android Speech, use the live transcript if available, otherwise fallback to OpenAI
         if (selectedProvider == TranscriptionProvider.ProviderType.ANDROID_SPEECH) {
@@ -510,11 +641,23 @@ public class HomeFragment extends Fragment {
             @Override
             public void onSuccess(String transcript, String segments) {
                 Log.d(TAG, "File transcription completed successfully");
+                TranscriptionLogger.logTranscriptionCompleted(meetingId, transcript, segments);
+                
+                if (!TranscriptionLogger.validateTranscript(transcript)) {
+                    TranscriptionLogger.logFlowFailed(meetingId, "Invalid transcript received from API");
+                    requireActivity().runOnUiThread(() -> {
+                        Toast.makeText(getContext(), "Invalid transcript received", Toast.LENGTH_LONG).show();
+                        binding.textRecordingStatus.setText("Ready to record");
+                    });
+                    return;
+                }
+                
                 processTranscriptionResult(meetingId, meetingTitle, transcript, calendarEvent);
             }
             
             @Override
             public void onProgress(int progressPercent) {
+                TranscriptionLogger.logTranscriptionProgress(meetingId, progressPercent);
                 requireActivity().runOnUiThread(() -> {
                     binding.textRecordingStatus.setText("Transcribing... " + progressPercent + "%");
                 });
@@ -523,6 +666,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onError(String error) {
                 Log.e(TAG, "Transcription failed: " + error);
+                TranscriptionLogger.logTranscriptionFailed(meetingId, error);
                 requireActivity().runOnUiThread(() -> {
                     Toast.makeText(getContext(), 
                         "Transcription failed: " + error, 
@@ -537,15 +681,40 @@ public class HomeFragment extends Fragment {
                                           String transcript, CalendarService.EventInfo calendarEvent) {
         Date meetingDate = new Date();
         
+        // Show saving transcript popup
+        showStepPopup("💾 Saving Transcript", 
+            "Saving transcript to file system...\n" +
+            "Length: " + transcript.length() + " characters", 
+            false);
+        
         // Save transcript
-        fileManager.saveTranscript(meetingId, meetingTitle, transcript, meetingDate);
+        boolean transcriptSaved = fileManager.saveTranscript(meetingId, meetingTitle, transcript, meetingDate);
+        if (transcriptSaved) {
+            TranscriptionLogger.logTranscriptSaved(meetingId, new File("transcript saved successfully"));
+            
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                showStepPopup("✅ Transcript Saved", 
+                    "Transcript saved successfully!\n" +
+                    "Meeting: " + meetingTitle + "\n" +
+                    "File: " + meetingId + "_transcript.txt", 
+                    false);
+            }, 1000);
+        } else {
+            TranscriptionLogger.logFlowFailed(meetingId, "Failed to save transcript to file");
+            showStepPopup("❌ Transcript Save Failed", 
+                "Failed to save transcript to file system.\n" +
+                "Check storage permissions.", 
+                true);
+        }
         
         // Generate summary using OpenAI if available and enabled
         if (openAIService != null && settingsManager.isAutoSummarizeEnabled()) {
+            TranscriptionLogger.logSummaryStart(meetingId);
             openAIService.generateSummary(transcript, meetingTitle, 
                 new OpenAIService.SummaryCallback() {
                     @Override
                     public void onSuccess(String summary) {
+                        TranscriptionLogger.logSummaryCompleted(meetingId, summary);
                         // Save summary
                         fileManager.saveSummary(meetingId, meetingTitle, summary, meetingDate);
                         
@@ -563,19 +732,28 @@ public class HomeFragment extends Fragment {
                             calendarEvent != null ? String.valueOf(calendarEvent.id) : null
                         );
                         
-                        requireActivity().runOnUiThread(() -> {
-                            Toast.makeText(getContext(), 
-                                "Meeting processed successfully!", 
-                                Toast.LENGTH_LONG).show();
-                                
-                            // Show transcript in dialog
-                            showTranscriptDialog(meetingTitle, transcript, summary);
-                        });
+                        TranscriptionLogger.logFlowCompleted(meetingId, true, true);
+                        showStepPopup("🎉 Process Complete!", 
+                            "Meeting processed successfully!\n" +
+                            "✅ Recording saved\n" +
+                            "✅ Transcript generated (" + transcript.length() + " chars)\n" +
+                            "✅ Summary created (" + summary.length() + " chars)\n" +
+                            (calendarEvent != null ? "✅ Calendar updated\n" : "") +
+                            "All files saved to storage.", 
+                            false);
+                            
+                        // Show transcript in dialog
+                        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                            if (isAdded() && getContext() != null) {
+                                showTranscriptDialog(meetingTitle, transcript, summary);
+                            }
+                        }, 2000);
                     }
                     
                     @Override
                     public void onError(String error) {
                         Log.w(TAG, "Summary generation failed: " + error);
+                        TranscriptionLogger.logSummaryFailed(meetingId, error);
                         // Save without summary
                         saveMeetingWithoutSummary(meetingId, meetingTitle, transcript, meetingDate, calendarEvent);
                     }
@@ -597,42 +775,68 @@ public class HomeFragment extends Fragment {
             calendarEvent != null ? String.valueOf(calendarEvent.id) : null
         );
         
-        requireActivity().runOnUiThread(() -> {
-            Toast.makeText(getContext(), 
-                "Transcription completed!", 
-                Toast.LENGTH_LONG).show();
-                
-            // Show transcript in dialog (no summary)
-            showTranscriptDialog(meetingTitle, transcript, null);
-        });
+        TranscriptionLogger.logFlowCompleted(meetingId, true, false);
+        
+        showStepPopup("🎉 Transcription Complete!", 
+            "Meeting transcription finished!\n" +
+            "✅ Recording saved\n" +
+            "✅ Transcript generated (" + transcript.length() + " chars)\n" +
+            (calendarEvent != null ? "✅ Calendar updated\n" : "") +
+            "Files saved to storage.", 
+            false);
+            
+        // Show transcript in dialog (no summary)
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            if (isAdded() && getContext() != null) {
+                showTranscriptDialog(meetingTitle, transcript, null);
+            }
+        }, 2000);
     }
     
     private void processWithOpenAIFallback(String meetingId, String meetingTitle, 
                                          File audioFile, CalendarService.EventInfo calendarEvent) {
         Log.d(TAG, "Using OpenAI as fallback for file transcription");
         
-        requireActivity().runOnUiThread(() -> {
-            Toast.makeText(getContext(), 
-                "Android Speech not available for files. Using OpenAI Whisper...", 
-                Toast.LENGTH_SHORT).show();
-        });
+        showStepPopup("🔄 Fallback Transcription", 
+            "Android Speech not available for files.\nUsing OpenAI Whisper...", 
+            false);
+        
+        // Show sending to API popup
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            showStepPopup("📤 Sending to Whisper API", 
+                "Uploading audio file to OpenAI Whisper...\n" +
+                "File: " + audioFile.getName() + "\n" +
+                "This may take a moment...", 
+                false);
+        }, 1500);
         
         // Use OpenAI directly for file transcription
         openAIService.transcribeAudio(audioFile, new OpenAIService.TranscriptionCallback() {
             @Override
             public void onSuccess(String transcript, org.json.JSONArray segments) {
                 Log.d(TAG, "OpenAI fallback transcription completed successfully");
+                
+                showStepPopup("📥 Transcript Received", 
+                    "Whisper API completed successfully!\n" +
+                    "Transcript length: " + transcript.length() + " characters\n" +
+                    "Processing results...", 
+                    false);
+                
                 processTranscriptionResult(meetingId, meetingTitle, transcript, calendarEvent);
             }
             
             @Override
             public void onError(String error) {
                 Log.e(TAG, "OpenAI fallback transcription failed: " + error);
+                showStepPopup("❌ Transcription Failed", 
+                    "OpenAI Whisper API error:\n" + error + "\n" +
+                    "Check your API key and network connection.", 
+                    true);
+                
                 requireActivity().runOnUiThread(() -> {
-                    Toast.makeText(getContext(), 
-                        "Transcription failed: " + error, 
-                        Toast.LENGTH_LONG).show();
-                    binding.textRecordingStatus.setText("Ready to record");
+                    if (binding != null) {
+                        binding.textRecordingStatus.setText("Ready to record");
+                    }
                 });
             }
         });
@@ -664,10 +868,22 @@ public class HomeFragment extends Fragment {
             return;
         }
         
+        // Show sending to API popup
+        showStepPopup("📤 Sending to Whisper API", 
+            "Uploading audio to OpenAI Whisper...\n" +
+            "File: " + audioFile.getName() + " (" + (audioFile.length() / 1024) + " KB)\n" +
+            "This may take a moment...", 
+            false);
+        
         // Transcribe audio
         openAIService.transcribeAudio(audioFile, new OpenAIService.TranscriptionCallback() {
             @Override
             public void onSuccess(String transcript, org.json.JSONArray segments) {
+                showStepPopup("📥 Transcript Received", 
+                    "Whisper API completed successfully!\n" +
+                    "Transcript length: " + transcript.length() + " characters\n" +
+                    "Saving to file system...", 
+                    false);
                 // Save transcript
                 Date meetingDate = new Date();
                 fileManager.saveTranscript(meetingId, meetingTitle, transcript, meetingDate);
@@ -1220,12 +1436,14 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        Log.d(TAG, "📡 Registering broadcast receiver for RECORDING_STATE_CHANGED");
         IntentFilter filter = new IntentFilter("RECORDING_STATE_CHANGED");
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             requireContext().registerReceiver(recordingStateReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
         } else {
             requireContext().registerReceiver(recordingStateReceiver, filter);
         }
+        Log.d(TAG, "✅ Broadcast receiver registered successfully");
     }
 
     @Override
@@ -1250,5 +1468,55 @@ public class HomeFragment extends Fragment {
         }
         
         binding = null;
+    }
+    
+    // Helper method to show step-by-step popups
+    private void showStepPopup(String title, String message, boolean isError) {
+        // Ensure we're on the main UI thread
+        if (!isAdded() || getContext() == null) return;
+        
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            // Already on main thread
+            showPopupOnMainThread(title, message, isError);
+        } else {
+            // Switch to main thread
+            requireActivity().runOnUiThread(() -> showPopupOnMainThread(title, message, isError));
+        }
+    }
+    
+    private void showPopupOnMainThread(String title, String message, boolean isError) {
+        if (!isAdded() || getContext() == null) return;
+        
+        try {
+            android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getContext());
+            builder.setTitle(title);
+            builder.setMessage(message);
+            
+            if (isError) {
+                builder.setIcon(android.R.drawable.ic_dialog_alert);
+            } else {
+                builder.setIcon(android.R.drawable.ic_dialog_info);
+            }
+            
+            builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss());
+            builder.setCancelable(true);
+            
+            android.app.AlertDialog dialog = builder.create();
+            dialog.show();
+            
+            // Also show as toast for quick visibility
+            Toast.makeText(getContext(), title, 
+                isError ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();
+                
+        } catch (Exception e) {
+            // Fallback to just toast if dialog fails
+            try {
+                Toast.makeText(getContext(), title + ": " + message, 
+                    isError ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT).show();
+            } catch (Exception ex) {
+                // Log error if even toast fails
+                Log.e(TAG, "Failed to show popup: " + title, ex);
+            }
+        }
     }
 }

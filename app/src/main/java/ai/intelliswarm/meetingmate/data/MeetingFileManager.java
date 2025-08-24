@@ -104,14 +104,62 @@ public class MeetingFileManager {
     
     // Save audio file
     public File saveAudioFile(String meetingId, File audioFile) {
-        File audioFolder = new File(rootDirectory, AUDIO_FOLDER);
-        File destinationFile = new File(audioFolder, meetingId + ".m4a");
+        Log.d(TAG, "Saving audio file for meeting: " + meetingId);
+        Log.d(TAG, "Source file: " + audioFile.getAbsolutePath() + " (exists: " + audioFile.exists() + ", size: " + audioFile.length() + " bytes)");
         
-        // Copy or move the audio file to the destination
-        if (audioFile.renameTo(destinationFile)) {
-            return destinationFile;
+        File audioFolder = new File(rootDirectory, AUDIO_FOLDER);
+        if (!audioFolder.exists()) {
+            boolean created = audioFolder.mkdirs();
+            Log.d(TAG, "Audio folder created: " + created + " at " + audioFolder.getAbsolutePath());
         }
-        return null;
+        
+        File destinationFile = new File(audioFolder, meetingId + ".m4a");
+        Log.d(TAG, "Destination file: " + destinationFile.getAbsolutePath());
+        
+        try {
+            // First try to rename/move the file (more efficient)
+            if (audioFile.renameTo(destinationFile)) {
+                Log.d(TAG, "Audio file moved successfully using renameTo()");
+                return destinationFile;
+            }
+            
+            // If rename fails, copy the file (more robust)
+            Log.w(TAG, "renameTo() failed, attempting to copy file");
+            
+            java.io.FileInputStream fis = new java.io.FileInputStream(audioFile);
+            java.io.FileOutputStream fos = new java.io.FileOutputStream(destinationFile);
+            
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            long totalBytes = 0;
+            
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                fos.write(buffer, 0, bytesRead);
+                totalBytes += bytesRead;
+            }
+            
+            fis.close();
+            fos.close();
+            
+            Log.d(TAG, "Audio file copied successfully: " + totalBytes + " bytes");
+            
+            // Delete the original file after successful copy
+            if (audioFile.delete()) {
+                Log.d(TAG, "Original audio file deleted");
+            } else {
+                Log.w(TAG, "Failed to delete original audio file");
+            }
+            
+            return destinationFile;
+            
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to save audio file", e);
+            // Clean up partial destination file if it exists
+            if (destinationFile.exists()) {
+                destinationFile.delete();
+            }
+            return null;
+        }
     }
     
     // Save transcript

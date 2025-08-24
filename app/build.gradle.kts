@@ -118,6 +118,8 @@ dependencies {
     // implementation("org.apache.poi:poi-scratchpad:5.2.4")
     
     testImplementation(libs.junit)
+    testImplementation("org.robolectric:robolectric:4.11.1")
+    testImplementation("org.mockito:mockito-core:5.8.0")
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 }

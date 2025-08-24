@@ -29,6 +29,10 @@ public class AudioRecordingService extends Service {
     private boolean isRecording = false;
     private long recordingStartTime;
     
+    // Store last recording info for backup access
+    private String lastRecordingPath;
+    private long lastRecordingDuration;
+    
     private final IBinder binder = new LocalBinder();
     
     public class LocalBinder extends Binder {
@@ -161,6 +165,10 @@ public class AudioRecordingService extends Service {
             
             long recordingDuration = System.currentTimeMillis() - recordingStartTime;
             
+            // Store last recording info for backup access
+            lastRecordingPath = currentFilePath;
+            lastRecordingDuration = recordingDuration;
+            
             // Broadcast recording stopped
             Intent intent = new Intent("RECORDING_STATE_CHANGED");
             intent.putExtra("isRecording", false);
@@ -220,6 +228,15 @@ public class AudioRecordingService extends Service {
             return System.currentTimeMillis() - recordingStartTime;
         }
         return 0;
+    }
+    
+    // Methods for backup access to last recording info
+    public String getLastRecordingPath() {
+        return lastRecordingPath;
+    }
+    
+    public long getLastRecordingDuration() {
+        return lastRecordingDuration;
     }
     
     @Override

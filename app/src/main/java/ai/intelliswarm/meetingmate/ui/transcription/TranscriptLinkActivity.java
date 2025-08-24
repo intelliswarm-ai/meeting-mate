@@ -24,7 +24,9 @@ import com.google.android.material.textview.MaterialTextView;
 import ai.intelliswarm.meetingmate.R;
 import ai.intelliswarm.meetingmate.data.MeetingFileManager;
 import ai.intelliswarm.meetingmate.service.AudioRecordingService;
+import ai.intelliswarm.meetingmate.service.OpenAIService;
 import ai.intelliswarm.meetingmate.analytics.AppLogger;
+import ai.intelliswarm.meetingmate.utils.SettingsManager;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -44,6 +46,8 @@ public class TranscriptLinkActivity extends AppCompatActivity {
     private RecyclerView transcriptsRecyclerView;
     private TranscriptFilesAdapter transcriptAdapter;
     private MeetingFileManager meetingFileManager;
+    private SettingsManager settingsManager;
+    private OpenAIService openAIService;
     
     // Recording controls
     private MaterialButton startRecordingButton;
@@ -72,6 +76,15 @@ public class TranscriptLinkActivity extends AppCompatActivity {
         
         dateTimeFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy 'at' HH:mm", Locale.getDefault());
         meetingFileManager = new MeetingFileManager(this);
+        settingsManager = SettingsManager.getInstance(this);
+        
+        // Initialize OpenAI service if API key is available
+        if (settingsManager.hasOpenAIApiKey()) {
+            openAIService = new OpenAIService(settingsManager.getOpenAIApiKey());
+            AppLogger.d(TAG, "OpenAI service initialized");
+        } else {
+            AppLogger.w(TAG, "OpenAI service not initialized - no API key");
+        }
         
         initializeViews();
         extractEventData();
@@ -79,10 +92,33 @@ public class TranscriptLinkActivity extends AppCompatActivity {
         setupRecyclerView();
         displayEventInfo();
         loadAvailableTranscripts();
+        updateRecordingUIState();
         
         recordingHandler = new Handler();
         
         AppLogger.lifecycle("TranscriptLinkActivity", "onCreate");
+    }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateRecordingUIState();
+    }
+    
+    private void updateRecordingUIState() {
+        if (settingsManager != null && !settingsManager.hasOpenAIApiKey()) {
+            recordingStatusText.setText("⚠️ Configure OpenAI API key in Settings to enable recording");
+            startRecordingButton.setEnabled(false);
+            openAIService = null; // Clear service if no API key
+        } else {
+            // Initialize or reinitialize OpenAI service if API key is now available
+            if (openAIService == null && settingsManager.hasOpenAIApiKey()) {
+                openAIService = new OpenAIService(settingsManager.getOpenAIApiKey());
+                AppLogger.d(TAG, "OpenAI service reinitialized");
+            }
+            recordingStatusText.setText("Ready to record");
+            startRecordingButton.setEnabled(true);
+        }
     }
     
     private void initializeViews() {
@@ -248,6 +284,15 @@ public class TranscriptLinkActivity extends AppCompatActivity {
     
     private void startRecording() {
         try {
+            // Check if OpenAI API key is configured
+            if (!settingsManager.hasOpenAIApiKey()) {
+                AppLogger.w(TAG, "Cannot start recording - OpenAI API key not configured");
+                Toast.makeText(this, 
+                    "OpenAI API key not configured. Please set up your API key in Settings to enable transcription.", 
+                    Toast.LENGTH_LONG).show();
+                return;
+            }
+            
             // Bind to recording service
             Intent serviceIntent = new Intent(this, AudioRecordingService.class);
             bindService(serviceIntent, serviceConnection, BIND_AUTO_CREATE);
@@ -287,7 +332,24 @@ public class TranscriptLinkActivity extends AppCompatActivity {
             recordingStatusText.setText("✅ Recording completed! Processing transcript...");
             
             AppLogger.i(TAG, "Recording stopped for event: " + eventTitle);
-            Toast.makeText(this, "Recording stopped and saved", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Recording stopped, processing transcript...", Toast.LENGTH_SHORT).show();
+            
+            // Get the recorded file and process with OpenAI
+            if (audioService != null) {
+                String filePath = audioService.getCurrentFilePath();
+                if (filePath != null) {
+                    File recordedFile = new File(filePath);
+                    if (recordedFile.exists()) {
+                        processRecordingWithOpenAI(recordedFile);
+                    } else {
+                        AppLogger.e(TAG, "Recorded file doesn't exist: " + filePath);
+                        recordingStatusText.setText("❌ Recording file not found");
+                    }
+                } else {
+                    AppLogger.e(TAG, "Recording file path is null");
+                    recordingStatusText.setText("❌ Recording file path not available");
+                }
+            }
             
             // Refresh transcript list to show new recording
             loadAvailableTranscripts();
@@ -374,6 +436,59 @@ public class TranscriptLinkActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+    
+    private void processRecordingWithOpenAI(File audioFile) {
+        if (openAIService == null) {
+            AppLogger.e(TAG, "OpenAI service not available");
+            recordingStatusText.setText("❌ OpenAI service not available");
+            return;
+        }
+        
+        AppLogger.d(TAG, "Starting OpenAI transcription for file: " + audioFile.getName());
+        
+        // Update UI to show processing
+        recordingStatusText.setText("🔄 Transcribing with OpenAI...");
+        
+        // Call OpenAI transcription with callback
+        openAIService.transcribeAudio(audioFile, new OpenAIService.TranscriptionCallback() {
+            @Override
+            public void onSuccess(String transcript, org.json.JSONArray segments) {
+                AppLogger.d(TAG, "OpenAI transcription completed successfully");
+                runOnUiThread(() -> {
+                    if (transcript != null && !transcript.trim().isEmpty()) {
+                        // Save transcript file
+                        String meetingId = "event_" + eventId + "_" + System.currentTimeMillis();
+                        Date meetingDate = new Date();
+                        
+                        boolean saved = meetingFileManager.saveTranscript(meetingId, eventTitle, transcript, meetingDate);
+                        if (saved) {
+                            AppLogger.i(TAG, "Transcript saved successfully");
+                            recordingStatusText.setText("✅ Transcript completed and saved!");
+                            Toast.makeText(TranscriptLinkActivity.this, "Transcript completed successfully!", Toast.LENGTH_SHORT).show();
+                            loadAvailableTranscripts(); // Refresh the list
+                        } else {
+                            AppLogger.e(TAG, "Failed to save transcript");
+                            recordingStatusText.setText("❌ Error saving transcript");
+                            Toast.makeText(TranscriptLinkActivity.this, "Error saving transcript", Toast.LENGTH_LONG).show();
+                        }
+                    } else {
+                        AppLogger.w(TAG, "Empty transcript received from OpenAI");
+                        recordingStatusText.setText("❌ Empty transcript received");
+                        Toast.makeText(TranscriptLinkActivity.this, "Transcription failed - empty result", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+            
+            @Override
+            public void onError(String error) {
+                AppLogger.e(TAG, "OpenAI transcription failed: " + error);
+                runOnUiThread(() -> {
+                    recordingStatusText.setText("❌ Transcription failed");
+                    Toast.makeText(TranscriptLinkActivity.this, "Transcription failed: " + error, Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
     
     public static class TranscriptFileInfo {
