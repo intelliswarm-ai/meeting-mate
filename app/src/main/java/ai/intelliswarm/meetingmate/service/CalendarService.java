@@ -327,6 +327,10 @@ public class CalendarService {
         event1.endTime = cal.getTime();
         event1.description = "Daily team sync";
         event1.location = "Conference Room A";
+        event1.hasMeetingNotes = true;
+        event1.summary = "Team discussed progress on Q4 deliverables and current blockers";
+        event1.keyPoints = "• Sprint 23 completed successfully\n• Performance improvements deployed\n• Testing phase scheduled for next week";
+        event1.actionItems = "• John: Complete API documentation by Friday\n• Sarah: Schedule user testing session\n• Team: Review security checklist";
         demoEvents.add(event1);
         
         // Demo Event 2: Project Review
@@ -340,6 +344,10 @@ public class CalendarService {
         event2.endTime = cal.getTime();
         event2.description = "Q4 project status review";
         event2.location = "Zoom Meeting";
+        event2.hasMeetingNotes = true;
+        event2.summary = "Comprehensive review of Q4 project milestones and budget allocation";
+        event2.keyPoints = "• 85% of deliverables completed on time\n• Budget utilization at 78%\n• Client satisfaction rating: 4.7/5";
+        event2.actionItems = "• Finance: Prepare final Q4 budget report\n• PM: Schedule Q1 planning session\n• All: Submit time tracking data";
         demoEvents.add(event2);
         
         // Demo Event 3: Client Call
@@ -639,6 +647,13 @@ public class CalendarService {
         public Date endTime;
         public String location;
         public long calendarId;
+        
+        // Meeting summary fields
+        public String summary;
+        public String keyPoints;
+        public String actionItems;
+        public String transcriptPath;
+        public boolean hasMeetingNotes;
         
         @Override
         public String toString() {

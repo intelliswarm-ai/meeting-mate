@@ -13,10 +13,12 @@ import ai.intelliswarm.meetingmate.data.MeetingFileManager;
 import ai.intelliswarm.meetingmate.export.TranscriptExporter;
 import ai.intelliswarm.meetingmate.analytics.AppLogger;
 import ai.intelliswarm.meetingmate.utils.SettingsManager;
+import ai.intelliswarm.meetingmate.transcription.SpeakerDetection;
 import android.content.Context;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.List;
 
 public class TranscriptViewerActivity extends AppCompatActivity {
     
@@ -25,9 +27,11 @@ public class TranscriptViewerActivity extends AppCompatActivity {
     private MaterialTextView titleText;
     private MaterialTextView dateText;
     private MaterialTextView transcriptContentText;
+    private MaterialTextView speakerSummaryText;
     private MaterialButton shareButton;
     private MaterialButton exportButton;
     private MaterialToolbar toolbar;
+    private com.google.android.material.card.MaterialCardView speakerSummaryCard;
     
     private String meetingId;
     private String meetingTitle;
@@ -59,6 +63,8 @@ public class TranscriptViewerActivity extends AppCompatActivity {
         titleText = findViewById(R.id.text_meeting_title);
         dateText = findViewById(R.id.text_meeting_date);
         transcriptContentText = findViewById(R.id.text_transcript_content);
+        speakerSummaryText = findViewById(R.id.text_speaker_summary);
+        speakerSummaryCard = findViewById(R.id.card_speaker_summary);
         shareButton = findViewById(R.id.button_share);
         exportButton = findViewById(R.id.button_export);
         
@@ -97,6 +103,47 @@ public class TranscriptViewerActivity extends AppCompatActivity {
         dateText.setText(dateFormat.format(meetingDate));
         
         transcriptContentText.setText(transcriptContent);
+        
+        // Check if transcript contains speaker information and show summary
+        setupSpeakerSummary();
+    }
+    
+    private void setupSpeakerSummary() {
+        try {
+            // Check if transcript contains speaker labels (formatted by our SpeakerDetection)
+            if (transcriptContent != null && transcriptContent.contains("**Speaker ")) {
+                // Extract speaker information from formatted transcript
+                String[] lines = transcriptContent.split("\n");
+                List<String> speakers = new java.util.ArrayList<>();
+                
+                for (String line : lines) {
+                    if (line.trim().startsWith("**Speaker ") && line.contains("**")) {
+                        String speakerLine = line.trim();
+                        int endIdx = speakerLine.indexOf("**", 2);
+                        if (endIdx > 0) {
+                            String speaker = speakerLine.substring(2, endIdx);
+                            if (!speakers.contains(speaker)) {
+                                speakers.add(speaker);
+                            }
+                        }
+                    }
+                }
+                
+                if (speakers.size() > 1) {
+                    speakerSummaryText.setText(speakers.size() + " speakers detected: " + 
+                        String.join(", ", speakers));
+                    speakerSummaryCard.setVisibility(android.view.View.VISIBLE);
+                    AppLogger.d(TAG, "Speaker summary shown: " + speakers.size() + " speakers");
+                } else {
+                    speakerSummaryCard.setVisibility(android.view.View.GONE);
+                }
+            } else {
+                speakerSummaryCard.setVisibility(android.view.View.GONE);
+            }
+        } catch (Exception e) {
+            AppLogger.e(TAG, "Error setting up speaker summary", e);
+            speakerSummaryCard.setVisibility(android.view.View.GONE);
+        }
     }
     
     private void setupClickListeners() {

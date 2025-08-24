@@ -61,7 +61,9 @@ public class OpenAIWhisperProvider implements TranscriptionProvider {
             .addFormDataPart("model", "whisper-1")
             .addFormDataPart("file", audioFile.getName(),
                 RequestBody.create(audioFile, MediaType.parse("audio/mpeg")))
-            .addFormDataPart("response_format", "verbose_json");
+            .addFormDataPart("response_format", "verbose_json")
+            .addFormDataPart("timestamp_granularities[]", "segment")
+            .addFormDataPart("timestamp_granularities[]", "word");
         
         // Add language parameter only if not auto-detect
         String language = settings.getTranscriptLanguage();
@@ -100,11 +102,39 @@ public class OpenAIWhisperProvider implements TranscriptionProvider {
                         JSONObject json = new JSONObject(responseBody);
                         String transcript = json.getString("text");
                         
-                        // Get segments for timestamps
+                        // Get segments for timestamps and speaker detection
                         String segments = "";
                         JSONArray segmentsArray = json.optJSONArray("segments");
                         if (segmentsArray != null) {
                             segments = segmentsArray.toString();
+                            
+                            // Apply advanced word-level speaker detection with language support
+                            try {
+                                SettingsManager settingsManager = SettingsManager.getInstance(context);
+                                String transcriptLanguage = settingsManager.getTranscriptLanguage();
+                                
+                                // Use enhanced segment-based detection with language support
+                                java.util.List<AdvancedSpeakerDetection.EnhancedSpeakerSegment> enhancedSegments = 
+                                    AdvancedSpeakerDetection.detectSpeakersAdvanced(segments, context, transcriptLanguage);
+                                
+                                if (!enhancedSegments.isEmpty()) {
+                                    String enhancedTranscript = AdvancedSpeakerDetection.formatEnhancedTranscript(enhancedSegments, transcriptLanguage);
+                                    transcript = enhancedTranscript;
+                                    android.util.Log.d("OpenAIWhisperProvider", "Using enhanced speaker detection");
+                                } else {
+                                    // Fallback to basic detection with language support
+                                    java.util.List<SpeakerDetection.SpeakerSegment> speakerSegments = 
+                                        SpeakerDetection.detectSpeakers(segments, transcriptLanguage);
+                                    
+                                    if (!speakerSegments.isEmpty()) {
+                                        String speakerTranscript = SpeakerDetection.formatTranscriptWithSpeakers(speakerSegments, transcriptLanguage);
+                                        transcript = speakerTranscript;
+                                        android.util.Log.d("OpenAIWhisperProvider", "Using basic voice-based detection");
+                                    }
+                                }
+                            } catch (Exception e) {
+                                android.util.Log.w("OpenAIWhisperProvider", "Speaker detection failed, using plain transcript", e);
+                            }
                         }
                         
                         callback.onProgress(100);

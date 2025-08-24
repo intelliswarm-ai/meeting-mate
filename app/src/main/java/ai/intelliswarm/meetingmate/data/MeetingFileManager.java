@@ -34,31 +34,44 @@ public class MeetingFileManager {
     }
     
     private void initializeDirectories() {
-        // For Android 11+ (API 30+), use app-specific storage (no permissions needed)
-        // For older versions, try external storage first, fallback to app-specific
+        // Use persistent storage that survives app updates
+        // Priority: External storage > App-specific external > Internal storage
         
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-            // Android 11+: Use app-specific external storage (no permissions needed)
+        File persistentDir = null;
+        
+        // Try Documents directory first (most persistent)
+        try {
+            if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+                File documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+                persistentDir = new File(documentsDir, ROOT_FOLDER);
+                
+                if (persistentDir.exists() || persistentDir.mkdirs()) {
+                    Log.d(TAG, "Using Documents directory (persistent): " + persistentDir.getAbsolutePath());
+                } else {
+                    persistentDir = null;
+                }
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Could not access Documents directory", e);
+            persistentDir = null;
+        }
+        
+        // Fallback to app-specific external storage
+        if (persistentDir == null) {
             File appSpecificDir = context.getExternalFilesDir(null);
             if (appSpecificDir != null) {
-                rootDirectory = new File(appSpecificDir, ROOT_FOLDER);
-                Log.d(TAG, "Using app-specific storage for Android 11+: " + rootDirectory.getAbsolutePath());
-            } else {
-                // Fallback to internal storage
-                rootDirectory = new File(context.getFilesDir(), ROOT_FOLDER);
-                Log.d(TAG, "Fallback to internal storage: " + rootDirectory.getAbsolutePath());
-            }
-        } else {
-            // Android 10 and below: Try external storage first
-            try {
-                File documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-                rootDirectory = new File(documentsDir, ROOT_FOLDER);
-                Log.d(TAG, "Using external storage for Android 10 and below: " + rootDirectory.getAbsolutePath());
-            } catch (Exception e) {
-                Log.w(TAG, "External storage not available, using app-specific storage", e);
-                rootDirectory = new File(context.getExternalFilesDir(null), ROOT_FOLDER);
+                persistentDir = new File(appSpecificDir, ROOT_FOLDER);
+                Log.d(TAG, "Using app-specific external storage: " + persistentDir.getAbsolutePath());
             }
         }
+        
+        // Last resort: internal storage
+        if (persistentDir == null) {
+            persistentDir = new File(context.getFilesDir(), ROOT_FOLDER);
+            Log.d(TAG, "Using internal storage (last resort): " + persistentDir.getAbsolutePath());
+        }
+        
+        rootDirectory = persistentDir;
         
         // Create the directory
         if (!rootDirectory.exists()) {

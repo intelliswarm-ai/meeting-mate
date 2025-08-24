@@ -80,6 +80,44 @@
 
             </LinearLayout>
 
+            <!-- Speaker Summary Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_speaker_summary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@android:color/transparent"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="12dp"
+                    android:background="#E3F2FD"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="👥"
+                        android:textSize="16sp"
+                        android:layout_marginEnd="8dp" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/text_speaker_summary"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Speaker detection summary"
+                        android:textSize="14sp"
+                        android:textColor="@color/md_theme_onSurface" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Transcript Content Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -108,7 +146,7 @@
                     <ScrollView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:maxHeight="400dp"
+                        android:maxHeight="500dp"
                         android:background="@color/md_theme_surface">
 
                         <com.google.android.material.textview.MaterialTextView
@@ -118,10 +156,11 @@
                             android:text="Transcript content will appear here..."
                             android:textSize="16sp"
                             android:textColor="@color/md_theme_onSurface"
-                            android:lineSpacingMultiplier="1.2"
+                            android:lineSpacingMultiplier="1.3"
                             android:textIsSelectable="true"
-                            android:padding="12dp"
-                            android:background="@color/md_theme_surface" />
+                            android:padding="16dp"
+                            android:background="@color/md_theme_surface"
+                            android:fontFamily="monospace" />
 
                     </ScrollView>
 

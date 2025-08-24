@@ -59,6 +59,12 @@ public class CalendarEventsAdapter extends RecyclerView.Adapter<CalendarEventsAd
         private final TextView timeText;
         private final TextView locationText;
         private final TextView descriptionText;
+        private final android.widget.LinearLayout meetingNotesLayout;
+        private final TextView meetingSummaryText;
+        private final TextView keyPointsText;
+        private final TextView keyPointsContentText;
+        private final TextView actionItemsText;
+        private final TextView actionItemsContentText;
 
         public EventViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -67,6 +73,12 @@ public class CalendarEventsAdapter extends RecyclerView.Adapter<CalendarEventsAd
             timeText = itemView.findViewById(R.id.text_event_time);
             locationText = itemView.findViewById(R.id.text_event_location);
             descriptionText = itemView.findViewById(R.id.text_event_description);
+            meetingNotesLayout = itemView.findViewById(R.id.layout_meeting_notes);
+            meetingSummaryText = itemView.findViewById(R.id.text_meeting_summary);
+            keyPointsText = itemView.findViewById(R.id.text_key_points);
+            keyPointsContentText = itemView.findViewById(R.id.text_key_points_content);
+            actionItemsText = itemView.findViewById(R.id.text_action_items);
+            actionItemsContentText = itemView.findViewById(R.id.text_action_items_content);
         }
 
         public void bind(CalendarService.EventInfo event, OnEventClickListener listener) {
@@ -93,6 +105,41 @@ public class CalendarEventsAdapter extends RecyclerView.Adapter<CalendarEventsAd
                 descriptionText.setVisibility(View.VISIBLE);
             } else {
                 descriptionText.setVisibility(View.GONE);
+            }
+            
+            // Display meeting notes if available
+            if (event.hasMeetingNotes && (event.summary != null || event.keyPoints != null || event.actionItems != null)) {
+                meetingNotesLayout.setVisibility(View.VISIBLE);
+                
+                // Summary
+                if (event.summary != null && !event.summary.trim().isEmpty()) {
+                    meetingSummaryText.setText(event.summary);
+                    meetingSummaryText.setVisibility(View.VISIBLE);
+                } else {
+                    meetingSummaryText.setVisibility(View.GONE);
+                }
+                
+                // Key Points
+                if (event.keyPoints != null && !event.keyPoints.trim().isEmpty()) {
+                    keyPointsText.setVisibility(View.VISIBLE);
+                    keyPointsContentText.setText(event.keyPoints);
+                    keyPointsContentText.setVisibility(View.VISIBLE);
+                } else {
+                    keyPointsText.setVisibility(View.GONE);
+                    keyPointsContentText.setVisibility(View.GONE);
+                }
+                
+                // Action Items
+                if (event.actionItems != null && !event.actionItems.trim().isEmpty()) {
+                    actionItemsText.setVisibility(View.VISIBLE);
+                    actionItemsContentText.setText(event.actionItems);
+                    actionItemsContentText.setVisibility(View.VISIBLE);
+                } else {
+                    actionItemsText.setVisibility(View.GONE);
+                    actionItemsContentText.setVisibility(View.GONE);
+                }
+            } else {
+                meetingNotesLayout.setVisibility(View.GONE);
             }
             
             cardView.setOnClickListener(v -> {

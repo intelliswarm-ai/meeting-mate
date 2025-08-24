@@ -50,6 +50,73 @@ public class TranscriptionManager {
     }
     
     /**
+     * Enhanced transcription callback with summary generation
+     */
+    public interface EnhancedTranscriptionCallback extends TranscriptionProvider.TranscriptionCallback {
+        void onSummaryGenerated(SummaryGenerator.MeetingSummary summary);
+        void onSummaryError(String error);
+    }
+    
+    /**
+     * Transcribe audio with automatic summary generation
+     */
+    public void transcribeWithSummary(File audioFile, String meetingTitle, EnhancedTranscriptionCallback callback) {
+        TranscriptionProvider provider = getCurrentProvider();
+        if (provider == null) {
+            callback.onError("No transcription provider available");
+            return;
+        }
+        
+        // First do transcription
+        provider.transcribe(audioFile, new TranscriptionProvider.TranscriptionCallback() {
+            @Override
+            public void onSuccess(String transcript, String segments) {
+                // Call original callback
+                callback.onSuccess(transcript, segments);
+                
+                // Then generate summary if auto-summarize is enabled
+                if (settingsManager.isAutoSummarizeEnabled()) {
+                    generateSummaryForTranscript(transcript, meetingTitle, callback);
+                }
+            }
+            
+            @Override
+            public void onProgress(int progressPercent) {
+                callback.onProgress(progressPercent);
+            }
+            
+            @Override
+            public void onError(String error) {
+                callback.onError(error);
+            }
+            
+            @Override
+            public void onPartialResult(String partialTranscript) {
+                callback.onPartialResult(partialTranscript);
+            }
+        });
+    }
+    
+    /**
+     * Generate summary for transcript
+     */
+    private void generateSummaryForTranscript(String transcript, String meetingTitle, EnhancedTranscriptionCallback callback) {
+        SummaryGenerator summaryGenerator = new SummaryGenerator(context);
+        
+        summaryGenerator.generateSummary(transcript, meetingTitle, new SummaryGenerator.SummaryCallback() {
+            @Override
+            public void onSuccess(SummaryGenerator.MeetingSummary summary) {
+                callback.onSummaryGenerated(summary);
+            }
+            
+            @Override
+            public void onError(String error) {
+                callback.onSummaryError(error);
+            }
+        });
+    }
+    
+    /**
      * Get all configured providers (ready to use)
      */
     public TranscriptionProvider[] getConfiguredProviders() {
