@@ -1,0 +1,115 @@
+<resources>
+    <!-- App Info -->
+    <string name="app_name">Meeting Mate</string>
+    
+    <!-- Navigation -->
+    <string name="title_home">Grabar</string>
+    <string name="title_dashboard">Reuniones</string>
+    <string name="title_notifications">Configuración</string>
+    
+    <!-- Recording Screen -->
+    <string name="ready_to_record">Listo para grabar</string>
+    <string name="recording_in_progress">Grabando en progreso…</string>
+    <string name="start_recording">Iniciar Grabación</string>
+    <string name="stop_recording">Detener Grabación</string>
+    <string name="select_calendar_event">Seleccionar Evento del Calendario (Opcional)</string>
+    <string name="no_events_today">No se encontraron eventos para hoy</string>
+    <string name="processing_audio">Procesando audio…</string>
+    <string name="transcription_complete">¡Transcripción completa!</string>
+    
+    <!-- Meetings Screen -->
+    <string name="select_date">Seleccionar Fecha</string>
+    <string name="refresh_meetings">Actualizar</string>
+    <string name="no_meetings_found">No se encontraron reuniones para esta fecha</string>
+    <string name="meetings_found">Se encontraron %d reunión(es)</string>
+    <string name="today">Hoy</string>
+    
+    <!-- Settings Screen -->
+    <string name="openai_api_key">Clave API de OpenAI</string>
+    <string name="enter_api_key">Introduce tu clave API de OpenAI</string>
+    <string name="save_api_key">Guardar Clave API</string>
+    <string name="test_api_key">Probar Conexión API</string>
+    <string name="api_key_valid">¡La clave API es válida!</string>
+    <string name="api_key_invalid">La clave API no es válida</string>
+    <string name="transcription_provider">Proveedor de Transcripción</string>
+    <string name="language_setting">Idioma</string>
+    <string name="select_language">Seleccionar Idioma</string>
+    <string name="auto_detect">Detectar automáticamente</string>
+    
+    <!-- Transcript Viewer -->
+    <string name="meeting_transcript">Transcripción de la Reunión</string>
+    <string name="share_transcript">Compartir</string>
+    <string name="export_transcript">Exportar</string>
+    <string name="transcript_content">Transcripción</string>
+    <string name="meeting_summary">Resumen</string>
+    <string name="transcript_exported">¡Transcripción exportada exitosamente!</string>
+    <string name="export_failed">Error al exportar la transcripción</string>
+    
+    <!-- General Actions -->
+    <string name="save">Guardar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="ok">OK</string>
+    <string name="yes">Sí</string>
+    <string name="no">No</string>
+    <string name="delete">Eliminar</string>
+    <string name="share">Compartir</string>
+    <string name="edit">Editar</string>
+    <string name="view">Ver</string>
+    
+    <!-- Error Messages -->
+    <string name="error_no_permission">Se requiere permiso para grabar audio</string>
+    <string name="error_recording_failed">Error en la grabación</string>
+    <string name="error_transcription_failed">Error en la transcripción: %s</string>
+    <string name="error_no_transcript">No hay transcripción disponible</string>
+    <string name="error_file_not_found">Archivo no encontrado</string>
+    <string name="error_network">Error de red. Verifica tu conexión.</string>
+    <string name="error_api_key_missing">Por favor configura tu clave API de OpenAI en Configuración</string>
+    
+    <!-- Success Messages -->
+    <string name="recording_saved">Grabación guardada exitosamente</string>
+    <string name="transcript_saved">Transcripción guardada exitosamente</string>
+    <string name="settings_saved">Configuración guardada</string>
+    
+    <!-- Permissions -->
+    <string name="permission_audio_title">Permiso de Micrófono</string>
+    <string name="permission_audio_message">Esta aplicación necesita acceso al micrófono para grabar reuniones</string>
+    <string name="permission_calendar_title">Permiso de Calendario</string>
+    <string name="permission_calendar_message">Esta aplicación necesita acceso al calendario para mostrar tus reuniones</string>
+    <string name="permission_storage_title">Permiso de Almacenamiento</string>
+    <string name="permission_storage_message">Esta aplicación necesita acceso al almacenamiento para guardar grabaciones</string>
+    
+    <!-- Calendar Integration -->
+    <string name="add_to_calendar">Agregar al Calendario</string>
+    <string name="calendar_updated">Evento del calendario actualizado</string>
+    <string name="select_calendar">Seleccionar Calendario</string>
+    
+    <!-- Language Names -->
+    <string name="lang_auto">Detectar automáticamente</string>
+    <string name="lang_en">Inglés</string>
+    <string name="lang_es">Español</string>
+    <string name="lang_fr">Francés</string>
+    <string name="lang_de">Alemán</string>
+    <string name="lang_it">Italiano</string>
+    <string name="lang_pt">Portugués</string>
+    <string name="lang_ru">Ruso</string>
+    <string name="lang_pl">Polaco</string>
+    <string name="lang_nl">Holandés</string>
+    <string name="lang_sv">Sueco</string>
+    <string name="lang_da">Danés</string>
+    <string name="lang_no">Noruego</string>
+    <string name="lang_fi">Finlandés</string>
+    <string name="lang_hu">Húngaro</string>
+    <string name="lang_cs">Checo</string>
+    <string name="lang_sk">Eslovaco</string>
+    <string name="lang_ro">Rumano</string>
+    <string name="lang_bg">Búlgaro</string>
+    <string name="lang_hr">Croata</string>
+    <string name="lang_sl">Esloveno</string>
+    <string name="lang_et">Estonio</string>
+    <string name="lang_lv">Letón</string>
+    <string name="lang_lt">Lituano</string>
+    <string name="lang_mt">Maltés</string>
+    <string name="lang_el">Griego</string>
+    <string name="lang_tr">Turco</string>
+    <string name="lang_uk">Ucraniano</string>
+</resources>

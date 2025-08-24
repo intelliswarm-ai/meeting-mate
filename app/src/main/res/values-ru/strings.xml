@@ -1,0 +1,115 @@
+<resources>
+    <!-- App Info -->
+    <string name="app_name">Meeting Mate</string>
+    
+    <!-- Navigation -->
+    <string name="title_home">Запись</string>
+    <string name="title_dashboard">Собрания</string>
+    <string name="title_notifications">Настройки</string>
+    
+    <!-- Recording Screen -->
+    <string name="ready_to_record">Готов к записи</string>
+    <string name="recording_in_progress">Идёт запись…</string>
+    <string name="start_recording">Начать запись</string>
+    <string name="stop_recording">Остановить запись</string>
+    <string name="select_calendar_event">Выбрать событие календаря (необязательно)</string>
+    <string name="no_events_today">Событий на сегодня не найдено</string>
+    <string name="processing_audio">Обработка аудио…</string>
+    <string name="transcription_complete">Транскрипция завершена!</string>
+    
+    <!-- Meetings Screen -->
+    <string name="select_date">Выбрать дату</string>
+    <string name="refresh_meetings">Обновить</string>
+    <string name="no_meetings_found">Собраний на эту дату не найдено</string>
+    <string name="meetings_found">Найдено %d собрание(й)</string>
+    <string name="today">Сегодня</string>
+    
+    <!-- Settings Screen -->
+    <string name="openai_api_key">API ключ OpenAI</string>
+    <string name="enter_api_key">Введите ваш API ключ OpenAI</string>
+    <string name="save_api_key">Сохранить API ключ</string>
+    <string name="test_api_key">Проверить соединение с API</string>
+    <string name="api_key_valid">API ключ действителен!</string>
+    <string name="api_key_invalid">API ключ недействителен</string>
+    <string name="transcription_provider">Провайдер транскрипции</string>
+    <string name="language_setting">Язык</string>
+    <string name="select_language">Выбрать язык</string>
+    <string name="auto_detect">Автоопределение</string>
+    
+    <!-- Transcript Viewer -->
+    <string name="meeting_transcript">Транскрипция собрания</string>
+    <string name="share_transcript">Поделиться</string>
+    <string name="export_transcript">Экспорт</string>
+    <string name="transcript_content">Транскрипция</string>
+    <string name="meeting_summary">Резюме</string>
+    <string name="transcript_exported">Транскрипция успешно экспортирована!</string>
+    <string name="export_failed">Не удалось экспортировать транскрипцию</string>
+    
+    <!-- General Actions -->
+    <string name="save">Сохранить</string>
+    <string name="cancel">Отмена</string>
+    <string name="ok">OK</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="delete">Удалить</string>
+    <string name="share">Поделиться</string>
+    <string name="edit">Редактировать</string>
+    <string name="view">Просмотр</string>
+    
+    <!-- Error Messages -->
+    <string name="error_no_permission">Требуется разрешение на запись аудио</string>
+    <string name="error_recording_failed">Ошибка записи</string>
+    <string name="error_transcription_failed">Ошибка транскрипции: %s</string>
+    <string name="error_no_transcript">Транскрипция недоступна</string>
+    <string name="error_file_not_found">Файл не найден</string>
+    <string name="error_network">Ошибка сети. Проверьте подключение.</string>
+    <string name="error_api_key_missing">Пожалуйста, настройте ваш API ключ OpenAI в настройках</string>
+    
+    <!-- Success Messages -->
+    <string name="recording_saved">Запись успешно сохранена</string>
+    <string name="transcript_saved">Транскрипция успешно сохранена</string>
+    <string name="settings_saved">Настройки сохранены</string>
+    
+    <!-- Permissions -->
+    <string name="permission_audio_title">Разрешение на микрофон</string>
+    <string name="permission_audio_message">Этому приложению нужен доступ к микрофону для записи собраний</string>
+    <string name="permission_calendar_title">Разрешение на календарь</string>
+    <string name="permission_calendar_message">Этому приложению нужен доступ к календарю для отображения ваших собраний</string>
+    <string name="permission_storage_title">Разрешение на хранение</string>
+    <string name="permission_storage_message">Этому приложению нужен доступ к хранилищу для сохранения записей</string>
+    
+    <!-- Calendar Integration -->
+    <string name="add_to_calendar">Добавить в календарь</string>
+    <string name="calendar_updated">События календаря обновлены</string>
+    <string name="select_calendar">Выбрать календарь</string>
+    
+    <!-- Language Names -->
+    <string name="lang_auto">Автоопределение</string>
+    <string name="lang_en">Английский</string>
+    <string name="lang_es">Испанский</string>
+    <string name="lang_fr">Французский</string>
+    <string name="lang_de">Немецкий</string>
+    <string name="lang_it">Итальянский</string>
+    <string name="lang_pt">Португальский</string>
+    <string name="lang_ru">Русский</string>
+    <string name="lang_pl">Польский</string>
+    <string name="lang_nl">Голландский</string>
+    <string name="lang_sv">Шведский</string>
+    <string name="lang_da">Датский</string>
+    <string name="lang_no">Норвежский</string>
+    <string name="lang_fi">Финский</string>
+    <string name="lang_hu">Венгерский</string>
+    <string name="lang_cs">Чешский</string>
+    <string name="lang_sk">Словацкий</string>
+    <string name="lang_ro">Румынский</string>
+    <string name="lang_bg">Болгарский</string>
+    <string name="lang_hr">Хорватский</string>
+    <string name="lang_sl">Словенский</string>
+    <string name="lang_et">Эстонский</string>
+    <string name="lang_lv">Латышский</string>
+    <string name="lang_lt">Литовский</string>
+    <string name="lang_mt">Мальтийский</string>
+    <string name="lang_el">Греческий</string>
+    <string name="lang_tr">Турецкий</string>
+    <string name="lang_uk">Украинский</string>
+</resources>

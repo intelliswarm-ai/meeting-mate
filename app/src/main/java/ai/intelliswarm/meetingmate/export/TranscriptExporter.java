@@ -30,6 +30,18 @@ public class TranscriptExporter {
     }
     
     /**
+     * Export transcript (simplified version for TranscriptViewerActivity)
+     */
+    public boolean exportTranscript(String meetingId, String meetingTitle, String transcript, Date meetingDate) {
+        try {
+            File exportedFile = exportToTXT(transcript, meetingTitle != null ? meetingTitle : "Untitled Meeting");
+            return exportedFile != null && exportedFile.exists();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    /**
      * Export to plain text format
      */
     public File exportToTXT(String transcript, String meetingTitle) throws IOException {

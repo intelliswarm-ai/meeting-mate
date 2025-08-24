@@ -69,6 +69,13 @@
             android:label="Debug Logs"
             android:parentActivityName=".MainActivity" />
             
+        <!-- Transcript Viewer Activity -->
+        <activity
+            android:name=".ui.transcription.TranscriptViewerActivity"
+            android:exported="false"
+            android:label="Meeting Transcript"
+            android:parentActivityName=".MainActivity" />
+            
         <!-- FileProvider for sharing logs -->
         <provider
             android:name="androidx.core.content.FileProvider"

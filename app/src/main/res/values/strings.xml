@@ -1,6 +1,115 @@
 <resources>
-    <string name="app_name">MeetingMate</string>
+    <!-- App Info -->
+    <string name="app_name">Meeting Mate</string>
+    
+    <!-- Navigation -->
     <string name="title_home">Record</string>
     <string name="title_dashboard">Meetings</string>
     <string name="title_notifications">Settings</string>
+    
+    <!-- Recording Screen -->
+    <string name="ready_to_record">Ready to record</string>
+    <string name="recording_in_progress">Recording in progress…</string>
+    <string name="start_recording">Start Recording</string>
+    <string name="stop_recording">Stop Recording</string>
+    <string name="select_calendar_event">Select Calendar Event (Optional)</string>
+    <string name="no_events_today">No events found for today</string>
+    <string name="processing_audio">Processing audio…</string>
+    <string name="transcription_complete">Transcription complete!</string>
+    
+    <!-- Meetings Screen -->
+    <string name="select_date">Select Date</string>
+    <string name="refresh_meetings">Refresh</string>
+    <string name="no_meetings_found">No meetings found for this date</string>
+    <string name="meetings_found">Found %d meeting(s)</string>
+    <string name="today">Today</string>
+    
+    <!-- Settings Screen -->
+    <string name="openai_api_key">OpenAI API Key</string>
+    <string name="enter_api_key">Enter your OpenAI API key</string>
+    <string name="save_api_key">Save API Key</string>
+    <string name="test_api_key">Test API Connection</string>
+    <string name="api_key_valid">API Key is valid!</string>
+    <string name="api_key_invalid">API Key is invalid</string>
+    <string name="transcription_provider">Transcription Provider</string>
+    <string name="language_setting">Language</string>
+    <string name="select_language">Select Language</string>
+    <string name="auto_detect">Auto-detect</string>
+    
+    <!-- Transcript Viewer -->
+    <string name="meeting_transcript">Meeting Transcript</string>
+    <string name="share_transcript">Share</string>
+    <string name="export_transcript">Export</string>
+    <string name="transcript_content">Transcript</string>
+    <string name="meeting_summary">Summary</string>
+    <string name="transcript_exported">Transcript exported successfully!</string>
+    <string name="export_failed">Failed to export transcript</string>
+    
+    <!-- General Actions -->
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="delete">Delete</string>
+    <string name="share">Share</string>
+    <string name="edit">Edit</string>
+    <string name="view">View</string>
+    
+    <!-- Error Messages -->
+    <string name="error_no_permission">Permission required to record audio</string>
+    <string name="error_recording_failed">Recording failed</string>
+    <string name="error_transcription_failed">Transcription failed: %s</string>
+    <string name="error_no_transcript">No transcript available</string>
+    <string name="error_file_not_found">File not found</string>
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_api_key_missing">Please configure your OpenAI API key in Settings</string>
+    
+    <!-- Success Messages -->
+    <string name="recording_saved">Recording saved successfully</string>
+    <string name="transcript_saved">Transcript saved successfully</string>
+    <string name="settings_saved">Settings saved</string>
+    
+    <!-- Permissions -->
+    <string name="permission_audio_title">Microphone Permission</string>
+    <string name="permission_audio_message">This app needs microphone access to record meetings</string>
+    <string name="permission_calendar_title">Calendar Permission</string>
+    <string name="permission_calendar_message">This app needs calendar access to show your meetings</string>
+    <string name="permission_storage_title">Storage Permission</string>
+    <string name="permission_storage_message">This app needs storage access to save recordings</string>
+    
+    <!-- Calendar Integration -->
+    <string name="add_to_calendar">Add to Calendar</string>
+    <string name="calendar_updated">Calendar event updated</string>
+    <string name="select_calendar">Select Calendar</string>
+    
+    <!-- Language Names -->
+    <string name="lang_auto">Auto-detect</string>
+    <string name="lang_en">English</string>
+    <string name="lang_es">Spanish</string>
+    <string name="lang_fr">French</string>
+    <string name="lang_de">German</string>
+    <string name="lang_it">Italian</string>
+    <string name="lang_pt">Portuguese</string>
+    <string name="lang_ru">Russian</string>
+    <string name="lang_pl">Polish</string>
+    <string name="lang_nl">Dutch</string>
+    <string name="lang_sv">Swedish</string>
+    <string name="lang_da">Danish</string>
+    <string name="lang_no">Norwegian</string>
+    <string name="lang_fi">Finnish</string>
+    <string name="lang_hu">Hungarian</string>
+    <string name="lang_cs">Czech</string>
+    <string name="lang_sk">Slovak</string>
+    <string name="lang_ro">Romanian</string>
+    <string name="lang_bg">Bulgarian</string>
+    <string name="lang_hr">Croatian</string>
+    <string name="lang_sl">Slovenian</string>
+    <string name="lang_et">Estonian</string>
+    <string name="lang_lv">Latvian</string>
+    <string name="lang_lt">Lithuanian</string>
+    <string name="lang_mt">Maltese</string>
+    <string name="lang_el">Greek</string>
+    <string name="lang_tr">Turkish</string>
+    <string name="lang_uk">Ukrainian</string>
 </resources>

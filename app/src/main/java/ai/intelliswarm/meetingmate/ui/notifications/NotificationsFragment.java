@@ -131,8 +131,17 @@ public class NotificationsFragment extends Fragment {
     }
     
     private void setupLanguageSpinner() {
-        String[] languages = {"English (en)", "Spanish (es)", "French (fr)", "German (de)", "Italian (it)"};
-        String[] codes = {"en", "es", "fr", "de", "it"};
+        // European languages supported by OpenAI Whisper
+        String[] languages = {
+            "Auto-detect", "English", "Spanish", "French", "German", "Italian", "Portuguese", 
+            "Russian", "Polish", "Dutch", "Swedish", "Danish", "Norwegian", "Finnish", 
+            "Hungarian", "Czech", "Slovak", "Romanian", "Bulgarian", "Croatian", "Slovenian", 
+            "Estonian", "Latvian", "Lithuanian", "Maltese", "Greek", "Turkish", "Ukrainian"
+        };
+        String[] codes = {
+            "auto", "en", "es", "fr", "de", "it", "pt", "ru", "pl", "nl", "sv", "da", "no", 
+            "fi", "hu", "cs", "sk", "ro", "bg", "hr", "sl", "et", "lv", "lt", "mt", "el", "tr", "uk"
+        };
         
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
             requireContext(), 
@@ -182,7 +191,10 @@ public class NotificationsFragment extends Fragment {
         
         // Load language
         String currentLanguage = settingsManager.getTranscriptLanguage();
-        String[] codes = {"en", "es", "fr", "de", "it"};
+        String[] codes = {
+            "auto", "en", "es", "fr", "de", "it", "pt", "ru", "pl", "nl", "sv", "da", "no", 
+            "fi", "hu", "cs", "sk", "ro", "bg", "hr", "sl", "et", "lv", "lt", "mt", "el", "tr", "uk"
+        };
         for (int i = 0; i < codes.length; i++) {
             if (codes[i].equals(currentLanguage)) {
                 binding.spinnerLanguage.setSelection(i);

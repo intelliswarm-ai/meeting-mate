@@ -119,7 +119,7 @@ public class SettingsManager {
     }
     
     public String getTranscriptLanguage() {
-        return sharedPreferences.getString(KEY_TRANSCRIPT_LANGUAGE, "en");
+        return sharedPreferences.getString(KEY_TRANSCRIPT_LANGUAGE, "auto");
     }
     
     // Transcription Provider Setting

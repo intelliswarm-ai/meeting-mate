@@ -1,0 +1,115 @@
+<resources>
+    <!-- App Info -->
+    <string name="app_name">Meeting Mate</string>
+    
+    <!-- Navigation -->
+    <string name="title_home">Aufnahme</string>
+    <string name="title_dashboard">Meetings</string>
+    <string name="title_notifications">Einstellungen</string>
+    
+    <!-- Recording Screen -->
+    <string name="ready_to_record">Bereit zur Aufnahme</string>
+    <string name="recording_in_progress">Aufnahme läuft…</string>
+    <string name="start_recording">Aufnahme starten</string>
+    <string name="stop_recording">Aufnahme beenden</string>
+    <string name="select_calendar_event">Kalenderereignis auswählen (optional)</string>
+    <string name="no_events_today">Keine Ereignisse für heute gefunden</string>
+    <string name="processing_audio">Audio wird verarbeitet…</string>
+    <string name="transcription_complete">Transkription abgeschlossen!</string>
+    
+    <!-- Meetings Screen -->
+    <string name="select_date">Datum auswählen</string>
+    <string name="refresh_meetings">Aktualisieren</string>
+    <string name="no_meetings_found">Keine Meetings für dieses Datum gefunden</string>
+    <string name="meetings_found">%d Meeting(s) gefunden</string>
+    <string name="today">Heute</string>
+    
+    <!-- Settings Screen -->
+    <string name="openai_api_key">OpenAI API-Schlüssel</string>
+    <string name="enter_api_key">Geben Sie Ihren OpenAI API-Schlüssel ein</string>
+    <string name="save_api_key">API-Schlüssel speichern</string>
+    <string name="test_api_key">API-Verbindung testen</string>
+    <string name="api_key_valid">API-Schlüssel ist gültig!</string>
+    <string name="api_key_invalid">API-Schlüssel ist ungültig</string>
+    <string name="transcription_provider">Transkriptionsanbieter</string>
+    <string name="language_setting">Sprache</string>
+    <string name="select_language">Sprache auswählen</string>
+    <string name="auto_detect">Automatisch erkennen</string>
+    
+    <!-- Transcript Viewer -->
+    <string name="meeting_transcript">Meeting-Transkript</string>
+    <string name="share_transcript">Teilen</string>
+    <string name="export_transcript">Exportieren</string>
+    <string name="transcript_content">Transkript</string>
+    <string name="meeting_summary">Zusammenfassung</string>
+    <string name="transcript_exported">Transkript erfolgreich exportiert!</string>
+    <string name="export_failed">Export des Transkripts fehlgeschlagen</string>
+    
+    <!-- General Actions -->
+    <string name="save">Speichern</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="ok">OK</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nein</string>
+    <string name="delete">Löschen</string>
+    <string name="share">Teilen</string>
+    <string name="edit">Bearbeiten</string>
+    <string name="view">Anzeigen</string>
+    
+    <!-- Error Messages -->
+    <string name="error_no_permission">Berechtigung zur Audioaufnahme erforderlich</string>
+    <string name="error_recording_failed">Aufnahme fehlgeschlagen</string>
+    <string name="error_transcription_failed">Transkription fehlgeschlagen: %s</string>
+    <string name="error_no_transcript">Kein Transkript verfügbar</string>
+    <string name="error_file_not_found">Datei nicht gefunden</string>
+    <string name="error_network">Netzwerkfehler. Überprüfen Sie Ihre Verbindung.</string>
+    <string name="error_api_key_missing">Bitte konfigurieren Sie Ihren OpenAI API-Schlüssel in den Einstellungen</string>
+    
+    <!-- Success Messages -->
+    <string name="recording_saved">Aufnahme erfolgreich gespeichert</string>
+    <string name="transcript_saved">Transkript erfolgreich gespeichert</string>
+    <string name="settings_saved">Einstellungen gespeichert</string>
+    
+    <!-- Permissions -->
+    <string name="permission_audio_title">Mikrofon-Berechtigung</string>
+    <string name="permission_audio_message">Diese App benötigt Mikrofonzugriff, um Meetings aufzunehmen</string>
+    <string name="permission_calendar_title">Kalender-Berechtigung</string>
+    <string name="permission_calendar_message">Diese App benötigt Kalenderzugriff, um Ihre Meetings anzuzeigen</string>
+    <string name="permission_storage_title">Speicher-Berechtigung</string>
+    <string name="permission_storage_message">Diese App benötigt Speicherzugriff, um Aufnahmen zu speichern</string>
+    
+    <!-- Calendar Integration -->
+    <string name="add_to_calendar">Zum Kalender hinzufügen</string>
+    <string name="calendar_updated">Kalenderereignis aktualisiert</string>
+    <string name="select_calendar">Kalender auswählen</string>
+    
+    <!-- Language Names -->
+    <string name="lang_auto">Automatisch erkennen</string>
+    <string name="lang_en">Englisch</string>
+    <string name="lang_es">Spanisch</string>
+    <string name="lang_fr">Französisch</string>
+    <string name="lang_de">Deutsch</string>
+    <string name="lang_it">Italienisch</string>
+    <string name="lang_pt">Portugiesisch</string>
+    <string name="lang_ru">Russisch</string>
+    <string name="lang_pl">Polnisch</string>
+    <string name="lang_nl">Niederländisch</string>
+    <string name="lang_sv">Schwedisch</string>
+    <string name="lang_da">Dänisch</string>
+    <string name="lang_no">Norwegisch</string>
+    <string name="lang_fi">Finnisch</string>
+    <string name="lang_hu">Ungarisch</string>
+    <string name="lang_cs">Tschechisch</string>
+    <string name="lang_sk">Slowakisch</string>
+    <string name="lang_ro">Rumänisch</string>
+    <string name="lang_bg">Bulgarisch</string>
+    <string name="lang_hr">Kroatisch</string>
+    <string name="lang_sl">Slowenisch</string>
+    <string name="lang_et">Estnisch</string>
+    <string name="lang_lv">Lettisch</string>
+    <string name="lang_lt">Litauisch</string>
+    <string name="lang_mt">Maltesisch</string>
+    <string name="lang_el">Griechisch</string>
+    <string name="lang_tr">Türkisch</string>
+    <string name="lang_uk">Ukrainisch</string>
+</resources>

@@ -1,0 +1,115 @@
+<resources>
+    <!-- App Info -->
+    <string name="app_name">Meeting Mate</string>
+    
+    <!-- Navigation -->
+    <string name="title_home">Εγγραφή</string>
+    <string name="title_dashboard">Συσκέψεις</string>
+    <string name="title_notifications">Ρυθμίσεις</string>
+    
+    <!-- Recording Screen -->
+    <string name="ready_to_record">Έτοιμο για εγγραφή</string>
+    <string name="recording_in_progress">Εγγραφή σε εξέλιξη…</string>
+    <string name="start_recording">Έναρξη Εγγραφής</string>
+    <string name="stop_recording">Τερματισμός Εγγραφής</string>
+    <string name="select_calendar_event">Επιλογή Γεγονότος Ημερολογίου (Προαιρετικό)</string>
+    <string name="no_events_today">Δεν βρέθηκαν γεγονότα για σήμερα</string>
+    <string name="processing_audio">Επεξεργασία ήχου…</string>
+    <string name="transcription_complete">Η μεταγραφή ολοκληρώθηκε!</string>
+    
+    <!-- Meetings Screen -->
+    <string name="select_date">Επιλογή Ημερομηνίας</string>
+    <string name="refresh_meetings">Ανανέωση</string>
+    <string name="no_meetings_found">Δεν βρέθηκαν συσκέψεις για αυτή την ημερομηνία</string>
+    <string name="meetings_found">Βρέθηκαν %d σύσκεψη/εις</string>
+    <string name="today">Σήμερα</string>
+    
+    <!-- Settings Screen -->
+    <string name="openai_api_key">Κλειδί API OpenAI</string>
+    <string name="enter_api_key">Εισάγετε το κλειδί API OpenAI σας</string>
+    <string name="save_api_key">Αποθήκευση Κλειδιού API</string>
+    <string name="test_api_key">Δοκιμή Σύνδεσης API</string>
+    <string name="api_key_valid">Το κλειδί API είναι έγκυρο!</string>
+    <string name="api_key_invalid">Το κλειδί API δεν είναι έγκυρο</string>
+    <string name="transcription_provider">Πάροχος Μεταγραφής</string>
+    <string name="language_setting">Γλώσσα</string>
+    <string name="select_language">Επιλογή Γλώσσας</string>
+    <string name="auto_detect">Αυτόματη ανίχνευση</string>
+    
+    <!-- Transcript Viewer -->
+    <string name="meeting_transcript">Μεταγραφή Σύσκεψης</string>
+    <string name="share_transcript">Κοινοποίηση</string>
+    <string name="export_transcript">Εξαγωγή</string>
+    <string name="transcript_content">Μεταγραφή</string>
+    <string name="meeting_summary">Περίληψη</string>
+    <string name="transcript_exported">Η μεταγραφή εξήχθη με επιτυχία!</string>
+    <string name="export_failed">Αποτυχία εξαγωγής μεταγραφής</string>
+    
+    <!-- General Actions -->
+    <string name="save">Αποθήκευση</string>
+    <string name="cancel">Ακύρωση</string>
+    <string name="ok">Εντάξει</string>
+    <string name="yes">Ναι</string>
+    <string name="no">Όχι</string>
+    <string name="delete">Διαγραφή</string>
+    <string name="share">Κοινοποίηση</string>
+    <string name="edit">Επεξεργασία</string>
+    <string name="view">Προβολή</string>
+    
+    <!-- Error Messages -->
+    <string name="error_no_permission">Απαιτείται άδεια για εγγραφή ήχου</string>
+    <string name="error_recording_failed">Αποτυχία εγγραφής</string>
+    <string name="error_transcription_failed">Αποτυχία μεταγραφής: %s</string>
+    <string name="error_no_transcript">Δεν υπάρχει διαθέσιμη μεταγραφή</string>
+    <string name="error_file_not_found">Το αρχείο δεν βρέθηκε</string>
+    <string name="error_network">Σφάλμα δικτύου. Ελέγξτε τη σύνδεσή σας.</string>
+    <string name="error_api_key_missing">Παρακαλώ διαμορφώστε το κλειδί API OpenAI στις Ρυθμίσεις</string>
+    
+    <!-- Success Messages -->
+    <string name="recording_saved">Η εγγραφή αποθηκεύτηκε με επιτυχία</string>
+    <string name="transcript_saved">Η μεταγραφή αποθηκεύτηκε με επιτυχία</string>
+    <string name="settings_saved">Οι ρυθμίσεις αποθηκεύτηκαν</string>
+    
+    <!-- Permissions -->
+    <string name="permission_audio_title">Άδεια Μικροφώνου</string>
+    <string name="permission_audio_message">Αυτή η εφαρμογή χρειάζεται πρόσβαση στο μικρόφωνο για να εγγράψει συσκέψεις</string>
+    <string name="permission_calendar_title">Άδεια Ημερολογίου</string>
+    <string name="permission_calendar_message">Αυτή η εφαρμογή χρειάζεται πρόσβαση στο ημερολόγιο για να εμφανίσει τις συσκέψεις σας</string>
+    <string name="permission_storage_title">Άδεια Αποθήκευσης</string>
+    <string name="permission_storage_message">Αυτή η εφαρμογή χρειάζεται πρόσβαση στην αποθήκευση για να σώσει εγγραφές</string>
+    
+    <!-- Calendar Integration -->
+    <string name="add_to_calendar">Προσθήκη στο Ημερολόγιο</string>
+    <string name="calendar_updated">Το γεγονός ημερολογίου ενημερώθηκε</string>
+    <string name="select_calendar">Επιλογή Ημερολογίου</string>
+    
+    <!-- Language Names -->
+    <string name="lang_auto">Αυτόματη ανίχνευση</string>
+    <string name="lang_en">Αγγλικά</string>
+    <string name="lang_es">Ισπανικά</string>
+    <string name="lang_fr">Γαλλικά</string>
+    <string name="lang_de">Γερμανικά</string>
+    <string name="lang_it">Ιταλικά</string>
+    <string name="lang_pt">Πορτογαλικά</string>
+    <string name="lang_ru">Ρωσικά</string>
+    <string name="lang_pl">Πολωνικά</string>
+    <string name="lang_nl">Ολλανδικά</string>
+    <string name="lang_sv">Σουηδικά</string>
+    <string name="lang_da">Δανικά</string>
+    <string name="lang_no">Νορβηγικά</string>
+    <string name="lang_fi">Φινλανδικά</string>
+    <string name="lang_hu">Ουγγρικά</string>
+    <string name="lang_cs">Τσεχικά</string>
+    <string name="lang_sk">Σλοβακικά</string>
+    <string name="lang_ro">Ρουμανικά</string>
+    <string name="lang_bg">Βουλγαρικά</string>
+    <string name="lang_hr">Κροατικά</string>
+    <string name="lang_sl">Σλοβενικά</string>
+    <string name="lang_et">Εσθονικά</string>
+    <string name="lang_lv">Λετονικά</string>
+    <string name="lang_lt">Λιθουανικά</string>
+    <string name="lang_mt">Μαλτέζικα</string>
+    <string name="lang_el">Ελληνικά</string>
+    <string name="lang_tr">Τουρκικά</string>
+    <string name="lang_uk">Ουκρανικά</string>
+</resources>

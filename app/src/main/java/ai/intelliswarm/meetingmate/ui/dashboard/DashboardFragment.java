@@ -18,6 +18,7 @@ import ai.intelliswarm.meetingmate.R;
 import ai.intelliswarm.meetingmate.service.CalendarService;
 import ai.intelliswarm.meetingmate.ui.calendar.CalendarEventsAdapter;
 import ai.intelliswarm.meetingmate.ui.transcription.TranscriptLinkActivity;
+import ai.intelliswarm.meetingmate.data.MeetingFileManager;
 import ai.intelliswarm.meetingmate.databinding.FragmentDashboardBinding;
 import ai.intelliswarm.meetingmate.analytics.AppLogger;
 import java.text.SimpleDateFormat;
@@ -69,6 +70,7 @@ public class DashboardFragment extends Fragment {
     private RecyclerView meetingsRecyclerView;
     private CalendarEventsAdapter meetingsAdapter;
     private CalendarService calendarService;
+    private MeetingFileManager meetingFileManager;
     private Date selectedDate;
     private SimpleDateFormat dateFormat;
 
@@ -89,6 +91,7 @@ public class DashboardFragment extends Fragment {
             
             // Initialize services and date handling
             calendarService = new CalendarService(requireContext());
+            meetingFileManager = new MeetingFileManager(requireContext());
             selectedDate = new Date(); // Default to today
             dateFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault());
             AppLogger.d(TAG, "Services initialized");

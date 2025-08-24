@@ -29,18 +29,29 @@ public class OpenAIService {
             .build();
     }
     
-    // Transcribe audio using Whisper API
+    // Transcribe audio using Whisper API (defaults to auto-detect language)
     public void transcribeAudio(File audioFile, TranscriptionCallback callback) {
+        transcribeAudio(audioFile, null, callback); // null = auto-detect
+    }
+    
+    // Transcribe audio using Whisper API with specified language
+    public void transcribeAudio(File audioFile, String language, TranscriptionCallback callback) {
         Log.d(TAG, "Starting audio transcription for file: " + audioFile.getName() + " (size: " + audioFile.length() + " bytes)");
+        Log.d(TAG, "Language setting: " + (language != null ? language : "auto-detect"));
         
-        RequestBody requestBody = new MultipartBody.Builder()
+        MultipartBody.Builder requestBodyBuilder = new MultipartBody.Builder()
             .setType(MultipartBody.FORM)
             .addFormDataPart("model", "whisper-1")
             .addFormDataPart("file", audioFile.getName(),
                 RequestBody.create(audioFile, MediaType.parse("audio/mpeg")))
-            .addFormDataPart("response_format", "verbose_json")
-            .addFormDataPart("language", "en")
-            .build();
+            .addFormDataPart("response_format", "verbose_json");
+        
+        // Add language parameter only if specified (null = auto-detect)
+        if (language != null && !language.isEmpty() && !language.equals("auto")) {
+            requestBodyBuilder.addFormDataPart("language", language);
+        }
+        
+        RequestBody requestBody = requestBodyBuilder.build();
         
         Request request = new Request.Builder()
             .url(WHISPER_API_URL)

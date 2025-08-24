@@ -1,0 +1,115 @@
+<resources>
+    <!-- App Info -->
+    <string name="app_name">Meeting Mate</string>
+    
+    <!-- Navigation -->
+    <string name="title_home">Spela in</string>
+    <string name="title_dashboard">Möten</string>
+    <string name="title_notifications">Inställningar</string>
+    
+    <!-- Recording Screen -->
+    <string name="ready_to_record">Redo att spela in</string>
+    <string name="recording_in_progress">Inspelning pågår…</string>
+    <string name="start_recording">Starta inspelning</string>
+    <string name="stop_recording">Stoppa inspelning</string>
+    <string name="select_calendar_event">Välj kalenderhändelse (valfritt)</string>
+    <string name="no_events_today">Inga händelser hittades för idag</string>
+    <string name="processing_audio">Bearbetar ljud…</string>
+    <string name="transcription_complete">Transkription klar!</string>
+    
+    <!-- Meetings Screen -->
+    <string name="select_date">Välj datum</string>
+    <string name="refresh_meetings">Uppdatera</string>
+    <string name="no_meetings_found">Inga möten hittades för detta datum</string>
+    <string name="meetings_found">Hittade %d möte(n)</string>
+    <string name="today">Idag</string>
+    
+    <!-- Settings Screen -->
+    <string name="openai_api_key">OpenAI API-nyckel</string>
+    <string name="enter_api_key">Ange din OpenAI API-nyckel</string>
+    <string name="save_api_key">Spara API-nyckel</string>
+    <string name="test_api_key">Testa API-anslutning</string>
+    <string name="api_key_valid">API-nyckeln är giltig!</string>
+    <string name="api_key_invalid">API-nyckeln är ogiltig</string>
+    <string name="transcription_provider">Transkriptionsleverantör</string>
+    <string name="language_setting">Språk</string>
+    <string name="select_language">Välj språk</string>
+    <string name="auto_detect">Upptäck automatiskt</string>
+    
+    <!-- Transcript Viewer -->
+    <string name="meeting_transcript">Mötesprotokoll</string>
+    <string name="share_transcript">Dela</string>
+    <string name="export_transcript">Exportera</string>
+    <string name="transcript_content">Transkription</string>
+    <string name="meeting_summary">Sammanfattning</string>
+    <string name="transcript_exported">Transkription exporterades framgångsrikt!</string>
+    <string name="export_failed">Det gick inte att exportera transkription</string>
+    
+    <!-- General Actions -->
+    <string name="save">Spara</string>
+    <string name="cancel">Avbryt</string>
+    <string name="ok">OK</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nej</string>
+    <string name="delete">Radera</string>
+    <string name="share">Dela</string>
+    <string name="edit">Redigera</string>
+    <string name="view">Visa</string>
+    
+    <!-- Error Messages -->
+    <string name="error_no_permission">Behörighet krävs för att spela in ljud</string>
+    <string name="error_recording_failed">Inspelning misslyckades</string>
+    <string name="error_transcription_failed">Transkription misslyckades: %s</string>
+    <string name="error_no_transcript">Ingen transkription tillgänglig</string>
+    <string name="error_file_not_found">Filen hittades inte</string>
+    <string name="error_network">Nätverksfel. Kontrollera din anslutning.</string>
+    <string name="error_api_key_missing">Konfigurera din OpenAI API-nyckel i Inställningar</string>
+    
+    <!-- Success Messages -->
+    <string name="recording_saved">Inspelning sparades framgångsrikt</string>
+    <string name="transcript_saved">Transkription sparades framgångsrikt</string>
+    <string name="settings_saved">Inställningar sparade</string>
+    
+    <!-- Permissions -->
+    <string name="permission_audio_title">Mikrofonbehörighet</string>
+    <string name="permission_audio_message">Denna app behöver mikrofonåtkomst för att spela in möten</string>
+    <string name="permission_calendar_title">Kalenderbehörighet</string>
+    <string name="permission_calendar_message">Denna app behöver kalenderåtkomst för att visa dina möten</string>
+    <string name="permission_storage_title">Lagringsbehörighet</string>
+    <string name="permission_storage_message">Denna app behöver lagringsåtkomst för att spara inspelningar</string>
+    
+    <!-- Calendar Integration -->
+    <string name="add_to_calendar">Lägg till i kalender</string>
+    <string name="calendar_updated">Kalenderhändelse uppdaterad</string>
+    <string name="select_calendar">Välj kalender</string>
+    
+    <!-- Language Names -->
+    <string name="lang_auto">Upptäck automatiskt</string>
+    <string name="lang_en">Engelska</string>
+    <string name="lang_es">Spanska</string>
+    <string name="lang_fr">Franska</string>
+    <string name="lang_de">Tyska</string>
+    <string name="lang_it">Italienska</string>
+    <string name="lang_pt">Portugisiska</string>
+    <string name="lang_ru">Ryska</string>
+    <string name="lang_pl">Polska</string>
+    <string name="lang_nl">Nederländska</string>
+    <string name="lang_sv">Svenska</string>
+    <string name="lang_da">Danska</string>
+    <string name="lang_no">Norska</string>
+    <string name="lang_fi">Finska</string>
+    <string name="lang_hu">Ungerska</string>
+    <string name="lang_cs">Tjeckiska</string>
+    <string name="lang_sk">Slovakiska</string>
+    <string name="lang_ro">Rumänska</string>
+    <string name="lang_bg">Bulgariska</string>
+    <string name="lang_hr">Kroatiska</string>
+    <string name="lang_sl">Slovenska</string>
+    <string name="lang_et">Estniska</string>
+    <string name="lang_lv">Lettiska</string>
+    <string name="lang_lt">Litauiska</string>
+    <string name="lang_mt">Maltesiska</string>
+    <string name="lang_el">Grekiska</string>
+    <string name="lang_tr">Turkiska</string>
+    <string name="lang_uk">Ukrainska</string>
+</resources>

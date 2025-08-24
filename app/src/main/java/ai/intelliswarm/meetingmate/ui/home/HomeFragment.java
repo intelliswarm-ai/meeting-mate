@@ -53,6 +53,7 @@ import ai.intelliswarm.meetingmate.transcription.TranscriptionManager;
 import ai.intelliswarm.meetingmate.analytics.TranscriptionLogger;
 import ai.intelliswarm.meetingmate.transcription.TranscriptionProvider;
 import ai.intelliswarm.meetingmate.transcription.AndroidSpeechProvider;
+import ai.intelliswarm.meetingmate.ui.transcription.TranscriptViewerActivity;
 
 public class HomeFragment extends Fragment {
     
@@ -628,8 +629,8 @@ public class HomeFragment extends Fragment {
                             Toast.LENGTH_LONG).show();
                         binding.textRecordingStatus.setText("Ready to record");
                         
-                        // Show dialog with the saved meeting
-                        showTranscriptDialog(meetingTitle, noTranscriptMessage, null);
+                        // Launch transcript viewer with the saved meeting
+                        launchTranscriptViewer(meetingId, meetingTitle, meetingDate);
                     });
                     return;
                 }
@@ -742,10 +743,10 @@ public class HomeFragment extends Fragment {
                             "All files saved to storage.", 
                             false);
                             
-                        // Show transcript in dialog
+                        // Launch transcript viewer
                         new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
                             if (isAdded() && getContext() != null) {
-                                showTranscriptDialog(meetingTitle, transcript, summary);
+                                launchTranscriptViewer(meetingId, meetingTitle, meetingDate);
                             }
                         }, 2000);
                     }
@@ -785,10 +786,10 @@ public class HomeFragment extends Fragment {
             "Files saved to storage.", 
             false);
             
-        // Show transcript in dialog (no summary)
+        // Launch transcript viewer (no summary)
         new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
             if (isAdded() && getContext() != null) {
-                showTranscriptDialog(meetingTitle, transcript, null);
+                launchTranscriptViewer(meetingId, meetingTitle, meetingDate);
             }
         }, 2000);
     }
@@ -915,8 +916,8 @@ public class HomeFragment extends Fragment {
                                     "Meeting processed successfully!", 
                                     Toast.LENGTH_LONG).show();
                                     
-                                // Show transcript in dialog
-                                showTranscriptDialog(meetingTitle, transcript, summary);
+                                // Launch transcript viewer
+                                launchTranscriptViewer(meetingId, meetingTitle, meetingDate);
                             });
                         }
                         
@@ -1155,9 +1156,7 @@ public class HomeFragment extends Fragment {
         builder.setMessage(message);
         
         builder.setPositiveButton("View Transcript", (dialog, which) -> {
-            showTranscriptDialog(meeting.title, 
-                transcript != null ? transcript : "No transcript available",
-                summary != null ? summary : "No summary available");
+            launchTranscriptViewer(meeting.meetingId, meeting.title, meeting.date);
         });
         
         builder.setNegativeButton("Add to Calendar", (dialog, which) -> {
@@ -1200,6 +1199,14 @@ public class HomeFragment extends Fragment {
         
         android.app.AlertDialog dialog = builder.create();
         dialog.show();
+    }
+    
+    private void launchTranscriptViewer(String meetingId, String meetingTitle, Date meetingDate) {
+        Intent intent = new Intent(requireContext(), TranscriptViewerActivity.class);
+        intent.putExtra("meeting_id", meetingId);
+        intent.putExtra("meeting_title", meetingTitle);
+        intent.putExtra("meeting_date", meetingDate.getTime());
+        startActivity(intent);
     }
     
     private void addMeetingToCalendar(CalendarService.CalendarInfo calendar, 

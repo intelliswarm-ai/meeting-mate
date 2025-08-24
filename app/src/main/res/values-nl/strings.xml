@@ -1,0 +1,115 @@
+<resources>
+    <!-- App Info -->
+    <string name="app_name">Meeting Mate</string>
+    
+    <!-- Navigation -->
+    <string name="title_home">Opnemen</string>
+    <string name="title_dashboard">Vergaderingen</string>
+    <string name="title_notifications">Instellingen</string>
+    
+    <!-- Recording Screen -->
+    <string name="ready_to_record">Klaar om op te nemen</string>
+    <string name="recording_in_progress">Opname bezig…</string>
+    <string name="start_recording">Start opname</string>
+    <string name="stop_recording">Stop opname</string>
+    <string name="select_calendar_event">Selecteer agenda-item (optioneel)</string>
+    <string name="no_events_today">Geen gebeurtenissen gevonden voor vandaag</string>
+    <string name="processing_audio">Audio verwerken…</string>
+    <string name="transcription_complete">Transcriptie voltooid!</string>
+    
+    <!-- Meetings Screen -->
+    <string name="select_date">Selecteer datum</string>
+    <string name="refresh_meetings">Vernieuwen</string>
+    <string name="no_meetings_found">Geen vergaderingen gevonden voor deze datum</string>
+    <string name="meetings_found">%d vergadering(en) gevonden</string>
+    <string name="today">Vandaag</string>
+    
+    <!-- Settings Screen -->
+    <string name="openai_api_key">OpenAI API-sleutel</string>
+    <string name="enter_api_key">Voer uw OpenAI API-sleutel in</string>
+    <string name="save_api_key">API-sleutel opslaan</string>
+    <string name="test_api_key">API-verbinding testen</string>
+    <string name="api_key_valid">API-sleutel is geldig!</string>
+    <string name="api_key_invalid">API-sleutel is ongeldig</string>
+    <string name="transcription_provider">Transcriptie-provider</string>
+    <string name="language_setting">Taal</string>
+    <string name="select_language">Selecteer taal</string>
+    <string name="auto_detect">Automatisch detecteren</string>
+    
+    <!-- Transcript Viewer -->
+    <string name="meeting_transcript">Vergadertranscriptie</string>
+    <string name="share_transcript">Delen</string>
+    <string name="export_transcript">Exporteren</string>
+    <string name="transcript_content">Transcriptie</string>
+    <string name="meeting_summary">Samenvatting</string>
+    <string name="transcript_exported">Transcriptie succesvol geëxporteerd!</string>
+    <string name="export_failed">Transcriptie exporteren mislukt</string>
+    
+    <!-- General Actions -->
+    <string name="save">Opslaan</string>
+    <string name="cancel">Annuleren</string>
+    <string name="ok">OK</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nee</string>
+    <string name="delete">Verwijderen</string>
+    <string name="share">Delen</string>
+    <string name="edit">Bewerken</string>
+    <string name="view">Bekijken</string>
+    
+    <!-- Error Messages -->
+    <string name="error_no_permission">Toestemming vereist om audio op te nemen</string>
+    <string name="error_recording_failed">Opname mislukt</string>
+    <string name="error_transcription_failed">Transcriptie mislukt: %s</string>
+    <string name="error_no_transcript">Geen transcriptie beschikbaar</string>
+    <string name="error_file_not_found">Bestand niet gevonden</string>
+    <string name="error_network">Netwerkfout. Controleer uw verbinding.</string>
+    <string name="error_api_key_missing">Configureer uw OpenAI API-sleutel in Instellingen</string>
+    
+    <!-- Success Messages -->
+    <string name="recording_saved">Opname succesvol opgeslagen</string>
+    <string name="transcript_saved">Transcriptie succesvol opgeslagen</string>
+    <string name="settings_saved">Instellingen opgeslagen</string>
+    
+    <!-- Permissions -->
+    <string name="permission_audio_title">Microfoontoestemming</string>
+    <string name="permission_audio_message">Deze app heeft microfoontoegang nodig om vergaderingen op te nemen</string>
+    <string name="permission_calendar_title">Agenda-toestemming</string>
+    <string name="permission_calendar_message">Deze app heeft agenda-toegang nodig om uw vergaderingen te tonen</string>
+    <string name="permission_storage_title">Opslagtoestemming</string>
+    <string name="permission_storage_message">Deze app heeft opslagtoegang nodig om opnames op te slaan</string>
+    
+    <!-- Calendar Integration -->
+    <string name="add_to_calendar">Toevoegen aan agenda</string>
+    <string name="calendar_updated">Agenda-item bijgewerkt</string>
+    <string name="select_calendar">Selecteer agenda</string>
+    
+    <!-- Language Names -->
+    <string name="lang_auto">Automatisch detecteren</string>
+    <string name="lang_en">Engels</string>
+    <string name="lang_es">Spaans</string>
+    <string name="lang_fr">Frans</string>
+    <string name="lang_de">Duits</string>
+    <string name="lang_it">Italiaans</string>
+    <string name="lang_pt">Portugees</string>
+    <string name="lang_ru">Russisch</string>
+    <string name="lang_pl">Pools</string>
+    <string name="lang_nl">Nederlands</string>
+    <string name="lang_sv">Zweeds</string>
+    <string name="lang_da">Deens</string>
+    <string name="lang_no">Noors</string>
+    <string name="lang_fi">Fins</string>
+    <string name="lang_hu">Hongaars</string>
+    <string name="lang_cs">Tsjechisch</string>
+    <string name="lang_sk">Slowaaks</string>
+    <string name="lang_ro">Roemeens</string>
+    <string name="lang_bg">Bulgaars</string>
+    <string name="lang_hr">Kroatisch</string>
+    <string name="lang_sl">Sloveens</string>
+    <string name="lang_et">Estisch</string>
+    <string name="lang_lv">Lets</string>
+    <string name="lang_lt">Litouws</string>
+    <string name="lang_mt">Maltees</string>
+    <string name="lang_el">Grieks</string>
+    <string name="lang_tr">Turks</string>
+    <string name="lang_uk">Oekraïens</string>
+</resources>

@@ -458,7 +458,14 @@ public class TranscriptLinkActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     if (transcript != null && !transcript.trim().isEmpty()) {
                         // Save transcript file
-                        String meetingId = "event_" + eventId + "_" + System.currentTimeMillis();
+                        // Use consistent meeting ID format like HomeFragment
+                        String meetingId;
+                        if (eventId != null && !eventId.trim().isEmpty()) {
+                            meetingId = "event_" + eventId + "_" + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+                        } else {
+                            // Use same format as recording tab for consistency
+                            meetingId = meetingFileManager.generateMeetingId();
+                        }
                         Date meetingDate = new Date();
                         
                         boolean saved = meetingFileManager.saveTranscript(meetingId, eventTitle, transcript, meetingDate);
